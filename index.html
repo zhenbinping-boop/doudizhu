@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>斗地主宗师 - 经典与局外养成</title>
+    <title>斗地主宗师 - 经典与局外成长</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -11,9 +11,33 @@
     <canvas id="effects-canvas"></canvas>
 
     <!-- ==============================================
+         0. 游戏开场 3D 动画与欢迎画面 (SPLASH SCREEN)
+         ============================================== -->
+    <div id="splash-screen">
+        <div class="splash-bg-glow"></div>
+        <div class="splash-cards-stage">
+            <div class="splash-card sc-1">♠A</div>
+            <div class="splash-card sc-2">♥K</div>
+            <div class="splash-card sc-3">🃏</div>
+            <div class="splash-card sc-4">♣Q</div>
+            <div class="splash-card sc-5">♦J</div>
+        </div>
+        <div class="splash-logo-box">
+            <div class="splash-subtitle">✦ 经典棋牌博弈 · 局外深度成长 ✦</div>
+            <h1 class="splash-title">斗地主宗师</h1>
+            <div class="splash-eng-title">FIGHT THE LANDLORD MASTER</div>
+        </div>
+        <button id="btn-enter-game" class="btn-splash-start">
+            <span class="btn-shine"></span>
+            <span class="btn-text">👑 点击进入游戏 👑</span>
+        </button>
+        <div class="splash-version">v2.0 豪华臻享版 · 离线/在线自适应</div>
+    </div>
+
+    <!-- ==============================================
          1. 游戏主大厅视图 (LOBBY VIEW)
          ============================================== -->
-    <div id="lobby-view">
+    <div id="lobby-view" class="hidden">
         <!-- 顶部玩家信息与资产 HUD -->
         <header class="lobby-header-hud">
             <div class="hud-player-profile">

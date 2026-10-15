@@ -183,11 +183,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const lobbyRenderer = new LobbyRenderer(systems, handleStartMatch, handleStartPuzzle);
 
-    // 首次进入时检查签到提示
-    const signStatus = quest.getSignInStatus();
-    if (signStatus.canClaim) {
-        setTimeout(() => {
-            lobbyRenderer.openSignInModal();
-        }, 600);
+    // 绑定开场欢迎页面的“点击进入游戏”
+    const splashScreen = document.getElementById('splash-screen');
+    const enterGameBtn = document.getElementById('btn-enter-game');
+
+    if (enterGameBtn && splashScreen) {
+        enterGameBtn.addEventListener('click', () => {
+            // 用户手势初始化 Web Audio API
+            audio.init();
+            audio.playTone(523.25, 'triangle', 0.15, 0.25);
+            setTimeout(() => audio.playTone(659.25, 'triangle', 0.18, 0.25), 100);
+            setTimeout(() => audio.playTone(783.99, 'triangle', 0.25, 0.3), 200);
+
+            // 淡出开场动画，展现大厅
+            splashScreen.classList.add('fade-out');
+            setTimeout(() => {
+                splashScreen.style.display = 'none';
+                lobbyView.classList.remove('hidden');
+                lobbyRenderer.updateHeaderHUD();
+            }, 600);
+        });
+    } else if (splashScreen) {
+        splashScreen.style.display = 'none';
+        lobbyView.classList.remove('hidden');
     }
 });

@@ -106,9 +106,17 @@ class TableRenderer {
             cardEl.dataset.rank = card.rank;
             cardEl.style.zIndex = idx + 1;
 
-            // 卡牌重叠间隔自适应
-            const overlap = Math.min(42, Math.max(22, 600 / len));
+            // 卡牌重叠间隔与扇形弧度自适应
+            const overlap = Math.min(46, Math.max(26, 680 / len));
             cardEl.style.left = `${idx * overlap}px`;
+
+            const mid = (len - 1) / 2;
+            const rot = (idx - mid) * 1.6;
+            const yArch = Math.abs(idx - mid) * 1.4;
+
+            cardEl.style.transform = this.selectedCards.has(card.id) ? 
+                `translateY(-30px) rotate(${rot}deg)` : 
+                `translateY(${yArch}px) rotate(${rot}deg)`;
 
             // 卡牌牌面构造
             if (card.isJoker) {
@@ -136,9 +144,11 @@ class TableRenderer {
                 if (this.selectedCards.has(card.id)) {
                     this.selectedCards.delete(card.id);
                     cardEl.classList.remove('selected');
+                    cardEl.style.transform = `translateY(${yArch}px) rotate(${rot}deg)`;
                 } else {
                     this.selectedCards.add(card.id);
                     cardEl.classList.add('selected');
+                    cardEl.style.transform = `translateY(-30px) rotate(${rot}deg)`;
                 }
             });
 
