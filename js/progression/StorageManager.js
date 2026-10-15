@@ -93,30 +93,40 @@ const DEFAULT_SAVE_DATA = {
 };
 
 class StorageManager {
+    static data = null;
+
     static load() {
         try {
             if (typeof localStorage === 'undefined') {
-                return JSON.parse(JSON.stringify(DEFAULT_SAVE_DATA));
+                this.data = JSON.parse(JSON.stringify(DEFAULT_SAVE_DATA));
+                return this.data;
             }
             const dataStr = localStorage.getItem(STORAGE_KEY);
             if (!dataStr) {
                 const initial = JSON.parse(JSON.stringify(DEFAULT_SAVE_DATA));
+                this.data = initial;
                 this.save(initial);
                 return initial;
             }
             const data = JSON.parse(dataStr);
             // 简单的版本补丁合并
-            return Object.assign({}, DEFAULT_SAVE_DATA, data);
+            this.data = Object.assign({}, DEFAULT_SAVE_DATA, data);
+            return this.data;
         } catch (e) {
             console.error('Failed to load save data:', e);
-            return JSON.parse(JSON.stringify(DEFAULT_SAVE_DATA));
+            this.data = JSON.parse(JSON.stringify(DEFAULT_SAVE_DATA));
+            return this.data;
         }
     }
 
-    static save(data) {
+    static save(data = null) {
         try {
-            if (typeof localStorage !== 'undefined') {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            const toSave = data || this.data;
+            if (toSave) {
+                this.data = toSave;
+                if (typeof localStorage !== 'undefined') {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+                }
             }
         } catch (e) {
             console.error('Failed to write save data:', e);

@@ -4,11 +4,16 @@
  * 管理：发牌、叫地主/抢地主、加倍、出牌轮转、记牌器数据同步、春天/反春判定、倍数结算与胜负处理
  */
 
-if (typeof require !== 'undefined' && typeof RuleEngine === 'undefined') {
-    var { Card } = require('./Card');
-    var { Deck } = require('./Deck');
-    var { RuleEngine, CARD_TYPES, HandCombination } = require('./RuleEngine');
-    var { AIPlayer } = require('./AIPlayer');
+if (typeof require !== 'undefined' && typeof module !== 'undefined') {
+    if (typeof Card === 'undefined') globalThis.Card = require('./Card').Card;
+    if (typeof Deck === 'undefined') globalThis.Deck = require('./Deck').Deck;
+    if (typeof RuleEngine === 'undefined') {
+        const importedRule = require('./RuleEngine');
+        globalThis.RuleEngine = importedRule.RuleEngine;
+        globalThis.CARD_TYPES = importedRule.CARD_TYPES;
+        globalThis.HandCombination = importedRule.HandCombination;
+    }
+    if (typeof AIPlayer === 'undefined') globalThis.AIPlayer = require('./AIPlayer').AIPlayer;
 }
 
 const VENUES = {

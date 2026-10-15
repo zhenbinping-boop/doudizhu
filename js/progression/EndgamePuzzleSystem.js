@@ -4,8 +4,12 @@
  * 收录 6 大经典残局，玩家扮演地主面对特定AI手牌，寻找唯一破解策略！
  */
 
-if (typeof require !== 'undefined' && typeof Card === 'undefined') {
-    var { Card, SUITS } = require('../core/Card');
+if (typeof require !== 'undefined' && typeof module !== 'undefined') {
+    if (typeof Card === 'undefined') {
+        const importedCard = require('../core/Card');
+        globalThis.Card = importedCard.Card;
+        globalThis.SUITS = importedCard.SUITS;
+    }
 }
 
 const PUZZLE_LEVELS = [

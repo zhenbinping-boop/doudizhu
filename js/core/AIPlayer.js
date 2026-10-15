@@ -8,9 +8,15 @@
  * 4. 智能控牌、拆牌保护、保牌与炸弹时机判定
  */
 
-if (typeof require !== 'undefined' && typeof RuleEngine === 'undefined') {
-    var { RuleEngine, CARD_TYPES } = require('./RuleEngine');
-    var { Card } = require('./Card');
+if (typeof require !== 'undefined' && typeof module !== 'undefined') {
+    if (typeof RuleEngine === 'undefined') {
+        const importedRule = require('./RuleEngine');
+        globalThis.RuleEngine = importedRule.RuleEngine;
+        globalThis.CARD_TYPES = importedRule.CARD_TYPES;
+    }
+    if (typeof Card === 'undefined') {
+        globalThis.Card = require('./Card').Card;
+    }
 }
 
 class AIPlayer {

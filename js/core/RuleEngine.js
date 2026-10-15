@@ -4,8 +4,10 @@
  * 支持：牌型识别、牌型大小比对、智能出牌提示生成、合法性校验
  */
 
-if (typeof require !== 'undefined' && typeof Card === 'undefined') {
-    var { Card } = require('./Card');
+if (typeof require !== 'undefined' && typeof module !== 'undefined') {
+    if (typeof Card === 'undefined') {
+        globalThis.Card = require('./Card').Card;
+    }
 }
 
 const CARD_TYPES = {

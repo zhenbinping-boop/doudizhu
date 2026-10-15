@@ -115,6 +115,15 @@ class LobbyRenderer {
                 if (modal) modal.classList.add('hidden');
             });
         });
+
+        // 点击遮罩背景关闭弹窗
+        document.querySelectorAll('.app-modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        });
     }
 
     // 1. 角色面板

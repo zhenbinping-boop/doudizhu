@@ -3,8 +3,12 @@
  * 牌堆管理：生成54张牌、洗牌、不洗牌模式、发牌、底牌预处理
  */
 
-if (typeof require !== 'undefined' && typeof Card === 'undefined') {
-    var { Card, SUITS } = require('./Card');
+if (typeof require !== 'undefined' && typeof module !== 'undefined') {
+    if (typeof Card === 'undefined') {
+        const importedCard = require('./Card');
+        globalThis.Card = importedCard.Card;
+        globalThis.SUITS = importedCard.SUITS;
+    }
 }
 
 class Deck {
