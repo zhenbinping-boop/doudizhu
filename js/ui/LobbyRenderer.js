@@ -15,11 +15,10 @@ class LobbyRenderer {
         this.systems = systems;
         this.onStartMatch = onStartMatch;
         this.onStartPuzzle = onStartPuzzle;
-        this.marqueeInterval = null;
+        this.activeCardIndex = 0;
 
         this.initDom();
         this.updateHeaderHUD();
-        this.startMarquee();
     }
 
     initDom() {
@@ -35,19 +34,13 @@ class LobbyRenderer {
         this.diamondsValEl = document.getElementById('lobby-diamonds-val');
         this.energyValEl = document.getElementById('lobby-energy-val');
 
-        // 主角立绘与快速开始推荐
-        this.heroAvatarEl = document.getElementById('lobby-hero-avatar');
-        this.heroQuoteEl = document.getElementById('lobby-hero-quote');
-        this.recommendedVenueEl = document.getElementById('qp-recommended-venue');
-        this.quickStartBtn = document.getElementById('btn-quick-start');
-        this.marqueeTextEl = document.getElementById('marquee-text');
+        // 卡牌全屏滑动轮播器组件
+        this.carouselTrack = document.getElementById('modes-carousel-track');
+        this.carouselDots = document.querySelectorAll('.dot-indicator');
+        this.prevCardBtn = document.getElementById('btn-prev-card');
+        this.nextCardBtn = document.getElementById('btn-next-card');
 
-        if (this.quickStartBtn) {
-            this.quickStartBtn.addEventListener('click', () => {
-                const best = this.getRecommendedVenue();
-                this.onStartMatch(best.key, 'CLASSIC');
-            });
-        }
+        this.bindCarousel();
 
         // 救济金按钮
         this.reliefBtn = document.getElementById('btn-claim-relief');
@@ -67,50 +60,99 @@ class LobbyRenderer {
             });
         }
 
-        // 绑定场次选择卡片
-        document.querySelectorAll('.venue-card').forEach(card => {
-            card.addEventListener('click', () => {
-                const venueKey = card.dataset.venue;
-                const mode = card.dataset.mode || 'CLASSIC';
-                this.onStartMatch(venueKey, mode);
-            });
-        });
-
         // 绑定功能弹窗按钮
         this.bindModalButtons();
     }
 
-    getRecommendedVenue() {
-        const coins = this.systems.storage.data.currencies.coins;
-        if (coins >= 100000) return { key: 'legend', name: '推荐：至尊巅峰场' };
-        if (coins >= 15000) return { key: 'master', name: '推荐：大师荣耀场' };
-        if (coins >= 3000) return { key: 'expert', name: '推荐：进阶高手场' };
-        return { key: 'novice', name: '推荐：新手初级场' };
+    /**
+     * 绑定主界面全屏模式卡牌滑动、左右切换与放大穿梭进场动画
+     */
+    bindCarousel() {
+        if (!this.carouselTrack) return;
+
+        // 监听滑轨横向滚动，实时同步小圆点索引
+        this.carouselTrack.addEventListener('scroll', () => {
+            const scrollLeft = this.carouselTrack.scrollLeft;
+            const firstCard = this.carouselTrack.querySelector('.mode-slide-card');
+            const cardWidth = firstCard ? firstCard.offsetWidth : 360;
+            const gap = 24;
+            const index = Math.round(scrollLeft / (cardWidth + gap));
+            if (index !== this.activeCardIndex && index >= 0 && index < this.carouselDots.length) {
+                this.updateActiveDot(index);
+            }
+        });
+
+        // 左右翻卡箭头
+        this.prevCardBtn?.addEventListener('click', () => {
+            const firstCard = this.carouselTrack.querySelector('.mode-slide-card');
+            const cardWidth = firstCard ? firstCard.offsetWidth : 360;
+            this.carouselTrack.scrollBy({ left: -(cardWidth + 24), behavior: 'smooth' });
+        });
+
+        this.nextCardBtn?.addEventListener('click', () => {
+            const firstCard = this.carouselTrack.querySelector('.mode-slide-card');
+            const cardWidth = firstCard ? firstCard.offsetWidth : 360;
+            this.carouselTrack.scrollBy({ left: (cardWidth + 24), behavior: 'smooth' });
+        });
+
+        // 点击小圆点快速定位
+        this.carouselDots.forEach((dot, idx) => {
+            dot.addEventListener('click', () => {
+                const cards = this.carouselTrack.querySelectorAll('.mode-slide-card');
+                if (cards[idx]) {
+                    cards[idx].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                    this.updateActiveDot(idx);
+                }
+            });
+        });
+
+        // 点击卡牌：卡牌放大，逐渐进入牌局
+        this.carouselTrack.querySelectorAll('.mode-slide-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const venueKey = card.dataset.venue;
+                const mode = card.dataset.mode || 'CLASSIC';
+
+                // 资金门槛判定
+                const minCoins = { novice: 500, expert: 3000, master: 15000, legend: 100000, no_shuffle: 5000, puzzle: 0 };
+                const req = minCoins[venueKey] || 0;
+                if (mode !== 'PUZZLE' && this.systems.storage.data.currencies.coins < req) {
+                    if (confirm(`金币不足！进入该场次需要 ${req.toLocaleString()} 金币。\n是否前往领取破产救济金或抽取转盘？`)) {
+                        if (this.systems.economy.canClaimRelief()) {
+                            this.handleClaimRelief();
+                        } else {
+                            this.openWheelModal();
+                        }
+                    }
+                    return;
+                }
+
+                // 核心动画：卡牌放大穿梭进入牌局
+                card.classList.add('card-diving');
+
+                if (window.audio) {
+                    window.audio.playTone(392, 'triangle', 0.2, 0.4);
+                    setTimeout(() => window.audio.playTone(523.25, 'triangle', 0.25, 0.4), 120);
+                    setTimeout(() => window.audio.playTone(659.25, 'triangle', 0.35, 0.5), 240);
+                }
+
+                setTimeout(() => {
+                    card.classList.remove('card-diving');
+                    if (mode === 'PUZZLE') {
+                        this.openPuzzleModal();
+                    } else {
+                        this.onStartMatch(venueKey, mode);
+                    }
+                }, 520);
+            });
+        });
     }
 
-    startMarquee() {
-        const messages = [
-            '📢 热烈欢迎来到《斗地主宗师》！当前全服高手云集，排位赛季激战正酣！',
-            '🎉 恭喜玩家【牌皇绝影】在至尊巅峰场赢得 2,480,000 金币！',
-            '⚡ 不洗牌狂欢场全面开放！连环炸弹、火箭满天飞，刺激翻倍！',
-            '🌾 每日任务与七日签到好礼刷新，领金币、钻石与保星卡！',
-            '🌲 天赋科技六维树已开启！加点强化金币收益与炸弹免伤！',
-            '🧩 经典六大残局闯关上线！烧脑解密，破局赢取海量钻石！'
-        ];
-        let msgIndex = 0;
-        if (this.marqueeInterval) clearInterval(this.marqueeInterval);
-        this.marqueeInterval = setInterval(() => {
-            if (this.marqueeTextEl) {
-                this.marqueeTextEl.style.opacity = '0';
-                this.marqueeTextEl.style.transform = 'translateY(8px)';
-                setTimeout(() => {
-                    msgIndex = (msgIndex + 1) % messages.length;
-                    this.marqueeTextEl.innerText = messages[msgIndex];
-                    this.marqueeTextEl.style.opacity = '1';
-                    this.marqueeTextEl.style.transform = 'translateY(0)';
-                }, 300);
-            }
-        }, 5000);
+    updateActiveDot(index) {
+        this.activeCardIndex = index;
+        this.carouselDots.forEach((d, i) => {
+            if (i === index) d.classList.add('active');
+            else d.classList.remove('active');
+        });
     }
 
     updateHeaderHUD() {
@@ -129,17 +171,6 @@ class LobbyRenderer {
         if (this.coinsValEl) this.coinsValEl.innerText = data.currencies.coins.toLocaleString();
         if (this.diamondsValEl) this.diamondsValEl.innerText = data.currencies.diamonds.toLocaleString();
         if (this.energyValEl) this.energyValEl.innerText = `${data.currencies.energy}/${data.currencies.maxEnergy}`;
-
-        // 动态刷新英雄展示与台词
-        if (this.heroAvatarEl) this.heroAvatarEl.innerText = activeChar.icon;
-        if (this.heroQuoteEl) {
-            const quote = CHARACTER_QUOTES[activeChar.id] || '牌友你好！今天手气正旺，点击【快速开始】来一局巅峰对决吧！';
-            this.heroQuoteEl.innerText = `"${quote}"`;
-        }
-        if (this.recommendedVenueEl) {
-            const rec = this.getRecommendedVenue();
-            this.recommendedVenueEl.innerText = rec.name;
-        }
 
         // 检查救济金是否可领
         if (this.reliefBtn) {

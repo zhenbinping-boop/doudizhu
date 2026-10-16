@@ -157,8 +157,10 @@ class TableRenderer {
         const cardWidth = isMobile ? 54 : 86;
         const maxTotalWidth = Math.min(screenWidth - 20, isMobile ? screenWidth - 10 : 760);
 
-        // 自适应重叠间距，确保 17~20 张牌永远不超出屏幕！
-        const overlap = len <= 1 ? 0 : Math.min(cardWidth * 0.52, Math.max(isMobile ? 15 : 24, (maxTotalWidth - cardWidth) / (len - 1)));
+        // 自适应重叠间距，确保角标与数字绝不被后一张牌遮挡！
+        const minOverlap = isMobile ? 19 : 28;
+        const maxOverlap = isMobile ? 32 : 52;
+        const overlap = len <= 1 ? 0 : Math.min(maxOverlap, Math.max(minOverlap, (maxTotalWidth - cardWidth) / (len - 1)));
         const totalWidth = (len - 1) * overlap + cardWidth;
         this.playerHandEl.style.width = `${totalWidth}px`;
 
@@ -183,7 +185,7 @@ class TableRenderer {
                 `translateY(-26px) rotate(${rot}deg)` : 
                 `translateY(${yArch}px) rotate(${rot}deg)`;
 
-            // 卡牌牌面设计
+            // 卡牌牌面设计（左上角角标紧凑布局，彻底杜绝遮挡）
             if (card.isJoker) {
                 cardEl.innerHTML = `
                     <div class="card-joker-corner" style="color: ${card.color}">${card.rank === 17 ? '大<br>王' : '小<br>王'}</div>
@@ -438,7 +440,7 @@ class TableRenderer {
     }
 
     /**
-     * 在专属座位出牌区渲染牌组
+     * 关键修复：在专属座位出牌区渲染牌组（角标置于左上角，彻底解决顺子/长牌型的数字遮挡问题）
      */
     renderSeatPlay(seat, cards) {
         const zone = this.playZones[seat];
@@ -449,7 +451,11 @@ class TableRenderer {
         playContainer.className = `played-cards-fan seat-zone-${seat}`;
         
         const isMobile = window.innerWidth <= 768;
-        const overlap = isMobile ? 18 : 26;
+        // 关键：计算充足的 overlap，使每张牌左上角的点数和花色完整暴露，绝不遮挡！
+        const minOverlap = isMobile ? 22 : 28;
+        const maxOverlap = isMobile ? 28 : 38;
+        const availableW = isMobile ? (window.innerWidth * 0.72) : 480;
+        const overlap = cards.length <= 1 ? 0 : Math.min(maxOverlap, Math.max(minOverlap, Math.floor(availableW / cards.length)));
 
         cards.forEach((card, idx) => {
             const cardEl = document.createElement('div');
@@ -459,15 +465,25 @@ class TableRenderer {
             cardEl.style.color = card.color;
 
             if (card.isJoker) {
-                cardEl.innerText = card.rank === 17 ? '大王' : '小王';
+                cardEl.innerHTML = `
+                    <div class="played-card-joker-corner" style="color: ${card.color}">${card.rank === 17 ? '大<br>王' : '小<br>王'}</div>
+                    <div class="played-card-center" style="color: ${card.color}">🃏</div>
+                `;
             } else {
-                cardEl.innerHTML = `<span class="played-rank">${card.name}</span><span class="played-suit">${card.suit}</span>`;
+                cardEl.innerHTML = `
+                    <div class="played-card-corner" style="color: ${card.color}">
+                        <div class="played-card-rank">${card.name}</div>
+                        <div class="played-card-suit">${card.suit}</div>
+                    </div>
+                    <div class="played-card-center" style="color: ${card.color}">${card.suit}</div>
+                `;
             }
             playContainer.appendChild(cardEl);
         });
 
         // 容器自适应总宽
-        const totalW = (cards.length - 1) * overlap + (isMobile ? 46 : 64);
+        const cardW = isMobile ? 44 : 58;
+        const totalW = (cards.length - 1) * overlap + cardW;
         playContainer.style.width = `${totalW}px`;
 
         zone.appendChild(playContainer);

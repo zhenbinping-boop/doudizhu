@@ -195,13 +195,13 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => audio.playTone(659.25, 'triangle', 0.18, 0.25), 100);
             setTimeout(() => audio.playTone(783.99, 'triangle', 0.25, 0.3), 200);
 
-            // 淡出开场动画，展现大厅
+            // 淡出开场动画，展现大厅 (1.2s 慢速柔和转场)
             splashScreen.classList.add('fade-out');
             setTimeout(() => {
                 splashScreen.style.display = 'none';
                 lobbyView.classList.remove('hidden');
                 lobbyRenderer.updateHeaderHUD();
-            }, 600);
+            }, 1150);
         });
     } else if (splashScreen) {
         splashScreen.style.display = 'none';

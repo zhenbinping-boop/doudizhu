@@ -69,32 +69,32 @@ body {
     align-items: center;
     justify-content: center;
     z-index: 8000;
-    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s ease;
+    transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s ease;
     overflow: hidden;
 }
 
 #splash-screen.fade-out {
     opacity: 0;
-    transform: scale(1.08);
+    transform: scale(1.12);
     pointer-events: none;
 }
 
 .splash-bg-glow {
     position: absolute;
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, rgba(239, 68, 68, 0.08) 50%, transparent 70%);
+    width: 650px;
+    height: 650px;
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.18) 0%, rgba(239, 68, 68, 0.09) 50%, transparent 70%);
     border-radius: 50%;
-    filter: blur(40px);
-    animation: pulseGlow 4s infinite alternate;
+    filter: blur(50px);
+    animation: pulseGlow 7s infinite alternate ease-in-out;
 }
 
 @keyframes pulseGlow {
-    0% { transform: scale(0.9); opacity: 0.6; }
-    100% { transform: scale(1.15); opacity: 1; }
+    0% { transform: scale(0.88); opacity: 0.5; }
+    100% { transform: scale(1.18); opacity: 0.95; }
 }
 
-/* 3D 扇形扑克开场动画 */
+/* 3D 扇形扑克开场动画（缓慢、从容、优雅展开与悬浮） */
 .splash-cards-stage {
     position: relative;
     width: 280px;
@@ -119,42 +119,42 @@ body {
     font-size: 26px;
     font-weight: 900;
     transform-origin: bottom center;
-    transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    animation: cardFloat 3s infinite ease-in-out;
+    transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: cardFloat 6.5s infinite ease-in-out;
 }
 
 .splash-card.sc-1 {
     transform: translateX(-50%) rotate(-30deg) translate(-50px, 15px);
     color: #1e293b;
-    animation-delay: 0.1s;
+    animation-delay: 0.25s;
 }
 .splash-card.sc-2 {
     transform: translateX(-50%) rotate(-15deg) translate(-25px, 5px);
     color: #ef4444;
-    animation-delay: 0.2s;
+    animation-delay: 0.5s;
 }
 .splash-card.sc-3 {
     transform: translateX(-50%) rotate(0deg) translate(0, -10px);
     color: #f59e0b;
     border-color: #f59e0b;
-    box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
-    animation-delay: 0.3s;
+    box-shadow: 0 0 24px rgba(245, 158, 11, 0.6);
+    animation-delay: 0.75s;
     font-size: 36px;
 }
 .splash-card.sc-4 {
     transform: translateX(-50%) rotate(15deg) translate(25px, 5px);
     color: #1e293b;
-    animation-delay: 0.4s;
+    animation-delay: 1.0s;
 }
 .splash-card.sc-5 {
     transform: translateX(-50%) rotate(30deg) translate(50px, 15px);
     color: #ef4444;
-    animation-delay: 0.5s;
+    animation-delay: 1.25s;
 }
 
 @keyframes cardFloat {
     0%, 100% { transform: translateX(-50%) translateY(0); }
-    50% { transform: translateX(-50%) translateY(-10px); }
+    50% { transform: translateX(-50%) translateY(-14px); }
 }
 
 .splash-logo-box {
@@ -202,12 +202,12 @@ body {
     box-shadow: 0 10px 30px rgba(239, 68, 68, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.4);
     cursor: pointer;
     overflow: hidden;
-    transition: all 0.25s ease;
-    animation: btnPulse 2s infinite;
+    transition: all 0.35s ease;
+    animation: btnPulse 4.5s infinite ease-in-out;
 }
 
 .btn-splash-start:hover {
-    transform: scale(1.06);
+    transform: scale(1.05);
     box-shadow: 0 14px 40px rgba(239, 68, 68, 0.7);
 }
 
@@ -219,7 +219,7 @@ body {
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
     transform: skewX(-25deg);
-    animation: shineSweep 2.5s infinite;
+    animation: shineSweep 5s infinite ease-in-out;
 }
 
 @keyframes shineSweep {
@@ -228,8 +228,8 @@ body {
 }
 
 @keyframes btnPulse {
-    0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
-    50% { box-shadow: 0 0 35px rgba(239, 68, 68, 0.85); }
+    0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.45); transform: scale(1); }
+    50% { box-shadow: 0 0 35px rgba(239, 68, 68, 0.85); transform: scale(1.02); }
 }
 
 .splash-version {
@@ -383,384 +383,368 @@ body {
     color: #fff;
 }
 
-/* 走马灯动态快报 */
-.lobby-marquee-bar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: linear-gradient(90deg, rgba(239, 68, 68, 0.25) 0%, rgba(245, 158, 11, 0.2) 50%, rgba(239, 68, 68, 0.15) 100%);
-    border-bottom: 1px solid rgba(245, 158, 11, 0.4);
-    padding: 8px 30px;
-    overflow: hidden;
-    backdrop-filter: blur(8px);
-}
-
-.marquee-icon {
-    font-size: 18px;
-    animation: iconBounce 2s infinite ease-in-out;
-}
-
-@keyframes iconBounce {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-}
-
-.marquee-scroll-container {
+/* ===================================================
+   主界面卡牌滑动轮播舞台 (FULL-SCREEN MODE CARD CAROUSEL)
+   每张卡牌对应一个模式，卡牌几乎占满屏幕，点击放大并逐渐进入牌局
+   =================================================== */
+.lobby-carousel-stage {
     flex: 1;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-#marquee-text {
-    font-size: 13px;
-    color: #fef08a;
-    font-weight: 700;
-    letter-spacing: 1px;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    display: inline-block;
-}
-
-/* 大厅核心展示区 */
-.lobby-main-content {
-    flex: 1;
+    position: relative;
+    width: 100vw;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 24px 24px;
-    max-width: 1200px;
-    margin: 0 auto;
-    width: 100%;
+    justify-content: center;
+    overflow: hidden;
+    padding: 10px 0 14px;
 }
 
-/* 主角立绘与快速开始推荐栏 */
-.lobby-hero-showcase {
+/* 滑轨容器：支持平滑居中对齐、滚轮、触控滑动 */
+.modes-carousel-track {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 30px;
+    padding: 10px calc(50vw - min(43vw, 215px));
     width: 100%;
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
-    border: 2px solid rgba(245, 158, 11, 0.5);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    border-radius: 24px;
-    padding: 18px 28px;
-    margin-bottom: 22px;
-    gap: 20px;
+    height: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    z-index: 5;
+}
+
+.modes-carousel-track::-webkit-scrollbar {
+    display: none;
+}
+
+/* 巨幅全屏卡牌 */
+.mode-slide-card {
+    flex: 0 0 min(86vw, 420px);
+    height: min(68vh, 580px);
+    scroll-snap-align: center;
+    border-radius: 28px;
+    border: 3px solid #475569;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), inset 0 2px 4px rgba(255, 255, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 26px 24px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
     position: relative;
     overflow: hidden;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease, border-color 0.3s ease;
+    backdrop-filter: blur(12px);
 }
 
-.lobby-hero-showcase::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(245, 158, 11, 0.12) 0%, transparent 70%);
+.mode-slide-card:hover {
+    transform: scale(1.02) translateY(-4px);
+    box-shadow: 0 28px 60px rgba(0, 0, 0, 0.85);
+}
+
+/* 核心需求：点击卡牌后，卡牌急剧放大穿梭，逐渐进入牌局 */
+.mode-slide-card.card-diving {
+    animation: cardDiveIn 0.55s cubic-bezier(0.2, 0.85, 0.25, 1) forwards !important;
+    z-index: 9999 !important;
     pointer-events: none;
 }
 
-.hero-character-box {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    flex: 1;
+@keyframes cardDiveIn {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+        filter: brightness(1);
+    }
+    40% {
+        transform: scale(1.5);
+        opacity: 0.85;
+        filter: brightness(1.8) contrast(1.2);
+    }
+    100% {
+        transform: scale(3.6);
+        opacity: 0;
+        filter: brightness(3.5) blur(12px);
+    }
 }
 
-.hero-avatar-halo {
-    width: 72px;
-    height: 72px;
+.card-inner-halo {
+    position: absolute;
+    width: 320px;
+    height: 320px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 40px;
-    border: 3px solid #fef3c7;
-    box-shadow: 0 0 24px rgba(245, 158, 11, 0.6);
-    flex-shrink: 0;
-    animation: avatarPulse 3s infinite ease-in-out;
+    top: -70px;
+    filter: blur(55px);
+    pointer-events: none;
+    opacity: 0.55;
+    animation: haloBreathe 5s infinite alternate ease-in-out;
 }
 
-@keyframes avatarPulse {
-    0%, 100% { box-shadow: 0 0 16px rgba(245, 158, 11, 0.5); transform: scale(1); }
-    50% { box-shadow: 0 0 28px rgba(245, 158, 11, 0.85); transform: scale(1.04); }
+@keyframes haloBreathe {
+    0% { transform: scale(0.9); opacity: 0.45; }
+    100% { transform: scale(1.2); opacity: 0.75; }
 }
 
-.hero-dialogue-bubble {
-    background: rgba(15, 23, 42, 0.85);
-    border: 1px solid rgba(245, 158, 11, 0.4);
-    border-radius: 16px;
-    padding: 12px 18px;
-    color: #e2e8f0;
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 1.5;
-    position: relative;
-    max-width: 520px;
+.card-top-ribbon {
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    padding: 5px 20px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    z-index: 2;
+    border: 1px solid rgba(255, 255, 255, 0.25);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
-.hero-dialogue-bubble::before {
-    content: '';
+.card-corner-badge {
     position: absolute;
-    left: -8px;
-    top: 50%;
-    transform: translateY(-50%) rotate(45deg);
-    width: 14px;
-    height: 14px;
-    background: rgba(15, 23, 42, 0.85);
-    border-left: 1px solid rgba(245, 158, 11, 0.4);
-    border-bottom: 1px solid rgba(245, 158, 11, 0.4);
-}
-
-.hero-quick-action {
-    flex-shrink: 0;
-}
-
-.btn-quick-play {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    background: linear-gradient(135deg, #ef4444 0%, #f59e0b 100%);
-    border: 2px solid #fef08a;
-    border-radius: 40px;
-    padding: 14px 30px;
-    color: #fff;
-    cursor: pointer;
-    box-shadow: 0 8px 24px rgba(239, 68, 68, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.4);
-    transition: all 0.25s ease;
-    animation: quickPlayGlow 2s infinite alternate;
-}
-
-@keyframes quickPlayGlow {
-    0% { transform: scale(1); box-shadow: 0 8px 24px rgba(239, 68, 68, 0.5); }
-    100% { transform: scale(1.03); box-shadow: 0 12px 32px rgba(245, 158, 11, 0.8); }
-}
-
-.btn-quick-play:hover {
-    transform: scale(1.06);
-    filter: brightness(1.1);
-}
-
-.quick-play-icon {
-    font-size: 30px;
-    animation: lightningShake 1.5s infinite;
-}
-
-@keyframes lightningShake {
-    0%, 100% { transform: rotate(0deg); }
-    10% { transform: rotate(-10deg); }
-    20% { transform: rotate(10deg); }
-    30% { transform: rotate(0deg); }
-}
-
-.quick-play-text {
-    text-align: left;
-}
-
-.qp-main {
-    font-size: 19px;
-    font-weight: 900;
-    letter-spacing: 2px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.qp-sub {
+    top: 20px;
+    right: -32px;
+    transform: rotate(45deg);
     font-size: 11px;
-    color: #fef08a;
-    font-weight: 700;
-    opacity: 0.95;
-}
-
-.section-banner-title {
-    font-size: 22px;
     font-weight: 900;
+    padding: 5px 36px;
+    color: #fff;
+    z-index: 3;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    letter-spacing: 1px;
+}
+
+.card-hero-emblem {
+    font-size: 78px;
+    margin: 8px 0 2px;
+    filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.7));
+    animation: emblemFloat 4s infinite ease-in-out;
+    z-index: 2;
+}
+
+@keyframes emblemFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.card-mode-title {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: #fff;
+    text-shadow: 0 4px 14px rgba(0, 0, 0, 0.9);
+    z-index: 2;
+}
+
+.card-mode-tagline {
+    font-size: 13px;
+    font-weight: 700;
+    color: #cbd5e1;
     letter-spacing: 2px;
-    color: #fef08a;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+    margin-bottom: 8px;
+    z-index: 2;
 }
 
-.venues-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 20px;
+.card-specs-panel {
     width: 100%;
-}
-
-.venue-card {
-    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
-    border: 2px solid #334155;
-    border-radius: 20px;
-    padding: 24px 18px;
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 18px;
+    padding: 14px 20px;
     display: flex;
     flex-direction: column;
+    gap: 8px;
+    backdrop-filter: blur(10px);
+    z-index: 2;
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.1);
+}
+
+.spec-row {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    text-align: center;
-    gap: 10px;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    position: relative;
-    overflow: hidden;
-}
-
-.venue-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #f59e0b, #ef4444);
-}
-
-.venue-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    border-color: var(--gold);
-    box-shadow: 0 16px 36px rgba(245, 158, 11, 0.35);
-}
-
-/* 场次卡片色彩主题与装饰 */
-.venue-card.theme-novice {
-    border-color: #10b981;
-    background: linear-gradient(160deg, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%);
-}
-.venue-card.theme-novice:hover {
-    box-shadow: 0 16px 36px rgba(16, 185, 129, 0.4);
-    border-color: #34d399;
-}
-.venue-card.theme-novice::before {
-    background: linear-gradient(90deg, #10b981, #059669);
-}
-
-.venue-card.theme-expert {
-    border-color: #f97316;
-    background: linear-gradient(160deg, rgba(249, 115, 22, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%);
-}
-.venue-card.theme-expert:hover {
-    box-shadow: 0 16px 36px rgba(249, 115, 22, 0.4);
-    border-color: #fb923c;
-}
-.venue-card.theme-expert::before {
-    background: linear-gradient(90deg, #f97316, #ea580c);
-}
-
-.venue-card.theme-master {
-    border-color: #f59e0b;
-    background: linear-gradient(160deg, rgba(245, 158, 11, 0.18) 0%, rgba(15, 23, 42, 0.95) 100%);
-}
-.venue-card.theme-master:hover {
-    box-shadow: 0 16px 36px rgba(245, 158, 11, 0.45);
-    border-color: #fde047;
-}
-.venue-card.theme-master::before {
-    background: linear-gradient(90deg, #f59e0b, #d97706);
-}
-
-.venue-card.theme-legend {
-    border-color: #ef4444;
-    background: linear-gradient(160deg, rgba(239, 68, 68, 0.2) 0%, rgba(15, 23, 42, 0.95) 100%);
-}
-.venue-card.theme-legend:hover {
-    box-shadow: 0 16px 36px rgba(239, 68, 68, 0.5);
-    border-color: #f87171;
-}
-.venue-card.theme-legend::before {
-    background: linear-gradient(90deg, #ef4444, #b91c1c);
-}
-
-.venue-card.theme-noshuffle {
-    border-color: #8b5cf6;
-    background: linear-gradient(160deg, rgba(139, 92, 246, 0.2) 0%, rgba(15, 23, 42, 0.95) 100%);
-}
-.venue-card.theme-noshuffle:hover {
-    box-shadow: 0 16px 36px rgba(139, 92, 246, 0.45);
-    border-color: #a78bfa;
-}
-.venue-card.theme-noshuffle::before {
-    background: linear-gradient(90deg, #8b5cf6, #6d28d9);
-}
-
-.venue-card.theme-puzzle {
-    border-color: #06b6d4;
-    background: linear-gradient(160deg, rgba(6, 182, 212, 0.2) 0%, rgba(15, 23, 42, 0.95) 100%);
-}
-.venue-card.theme-puzzle:hover {
-    box-shadow: 0 16px 36px rgba(6, 182, 212, 0.45);
-    border-color: #22d3ee;
-}
-.venue-card.theme-puzzle::before {
-    background: linear-gradient(90deg, #06b6d4, #0891b2);
-}
-
-.venue-top-tag {
-    font-size: 11px;
-    font-weight: 800;
-    color: #cbd5e1;
-    background: rgba(255, 255, 255, 0.08);
-    padding: 2px 10px;
-    border-radius: 10px;
-}
-
-.venue-enter-btn {
-    margin-top: 6px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    color: #fff;
-    padding: 7px 22px;
-    border-radius: 20px;
     font-size: 13px;
     font-weight: 800;
-    cursor: pointer;
-    transition: all 0.2s ease;
 }
 
-.venue-card:hover .venue-enter-btn {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    border-color: #fef08a;
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.5);
-}
-
-.venue-icon {
-    font-size: 46px;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
-}
-
-.venue-title {
-    font-size: 19px;
-    font-weight: 900;
-    color: #ffffff;
-}
-
-.venue-base-score {
-    font-size: 14px;
-    color: var(--gold);
-    font-weight: 700;
-}
-
-.venue-entry-req {
-    font-size: 12px;
+.spec-label {
     color: #94a3b8;
 }
 
-.venue-badge-hot {
-    position: absolute;
-    top: 14px;
-    right: -28px;
-    background: linear-gradient(90deg, #ef4444, #dc2626);
+.spec-val.gold { color: #fde047; font-weight: 900; }
+.spec-val.green { color: #4ade80; }
+.spec-val.orange { color: #fb923c; }
+.spec-val.yellow { color: #facc15; }
+.spec-val.red { color: #f87171; }
+.spec-val.purple { color: #c084fc; }
+.spec-val.cyan { color: #38bdf8; }
+
+.card-enter-btn {
+    width: 100%;
+    padding: 14px 0;
+    border-radius: 30px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    font-size: 17px;
+    font-weight: 900;
+    letter-spacing: 2px;
     color: #fff;
-    font-size: 11px;
-    font-weight: 800;
-    padding: 4px 30px;
-    transform: rotate(45deg);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    z-index: 2;
+    transition: all 0.25s ease;
+    animation: cardBtnPulse 3s infinite ease-in-out;
+}
+
+@keyframes cardBtnPulse {
+    0%, 100% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.02); filter: brightness(1.15); }
+}
+
+.card-enter-btn .btn-flare {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+    transform: skewX(-25deg);
+    animation: shineSweep 4s infinite ease-in-out;
+}
+
+/* 6 大特色主题涂装 */
+/* 1. 新手初级场 (Emerald) */
+.mode-slide-card.theme-novice {
+    border-color: #10b981;
+    background: radial-gradient(circle at 50% 20%, #064e3b 0%, #022c22 60%, #0b171f 100%);
+}
+.mode-slide-card.theme-novice .card-inner-halo { background: #10b981; }
+.mode-slide-card.theme-novice .card-enter-btn {
+    background: linear-gradient(135deg, #10b981, #047857);
+    border-color: #6ee7b7;
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.5);
+}
+
+/* 2. 进阶高手场 (Blazing Orange) */
+.mode-slide-card.theme-expert {
+    border-color: #f97316;
+    background: radial-gradient(circle at 50% 20%, #7c2d12 0%, #431407 60%, #0b171f 100%);
+}
+.mode-slide-card.theme-expert .card-inner-halo { background: #f97316; }
+.mode-slide-card.theme-expert .card-enter-btn {
+    background: linear-gradient(135deg, #f97316, #c2410c);
+    border-color: #fdba74;
+    box-shadow: 0 8px 24px rgba(249, 115, 22, 0.5);
+}
+
+/* 3. 大师荣耀场 (Imperial Gold) */
+.mode-slide-card.theme-master {
+    border-color: #f59e0b;
+    background: radial-gradient(circle at 50% 20%, #78350f 0%, #451a03 60%, #0b171f 100%);
+}
+.mode-slide-card.theme-master .card-inner-halo { background: #f59e0b; }
+.mode-slide-card.theme-master .card-enter-btn {
+    background: linear-gradient(135deg, #f59e0b, #b45309);
+    border-color: #fde68a;
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.6);
+}
+
+/* 4. 至尊巅峰场 (Dragon Crimson) */
+.mode-slide-card.theme-legend {
+    border-color: #ef4444;
+    background: radial-gradient(circle at 50% 20%, #7f1d1d 0%, #450a0a 60%, #0b171f 100%);
+}
+.mode-slide-card.theme-legend .card-inner-halo { background: #ef4444; }
+.mode-slide-card.theme-legend .card-enter-btn {
+    background: linear-gradient(135deg, #ef4444, #991b1b);
+    border-color: #fca5a5;
+    box-shadow: 0 8px 24px rgba(239, 68, 68, 0.6);
+}
+
+/* 5. 不洗牌狂欢场 (Electric Violet) */
+.mode-slide-card.theme-noshuffle {
+    border-color: #8b5cf6;
+    background: radial-gradient(circle at 50% 20%, #4c1d95 0%, #2e1065 60%, #0b171f 100%);
+}
+.mode-slide-card.theme-noshuffle .card-inner-halo { background: #8b5cf6; }
+.mode-slide-card.theme-noshuffle .card-corner-badge { background: linear-gradient(90deg, #ec4899, #8b5cf6); }
+.mode-slide-card.theme-noshuffle .card-enter-btn {
+    background: linear-gradient(135deg, #8b5cf6, #5b21b6);
+    border-color: #d8b4fe;
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.6);
+}
+
+/* 6. 残局解密闯关 (Celestial Cyan) */
+.mode-slide-card.theme-puzzle {
+    border-color: #06b6d4;
+    background: radial-gradient(circle at 50% 20%, #164e63 0%, #083344 60%, #0b171f 100%);
+}
+.mode-slide-card.theme-puzzle .card-inner-halo { background: #06b6d4; }
+.mode-slide-card.theme-puzzle .card-corner-badge { background: linear-gradient(90deg, #06b6d4, #0284c7); }
+.mode-slide-card.theme-puzzle .card-enter-btn {
+    background: linear-gradient(135deg, #06b6d4, #0e7490);
+    border-color: #67e8f9;
+    box-shadow: 0 8px 24px rgba(6, 182, 212, 0.6);
+}
+
+/* 左右切换箭头按键 */
+.carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.85);
+    border: 2px solid rgba(245, 158, 11, 0.4);
+    color: #fef08a;
+    font-size: 32px;
+    font-weight: 300;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+    transition: all 0.2s ease;
+    backdrop-filter: blur(8px);
+}
+
+.carousel-arrow:hover {
+    background: rgba(245, 158, 11, 0.25);
+    border-color: var(--gold);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-arrow.arrow-left { left: 16px; }
+.carousel-arrow.arrow-right { right: 16px; }
+
+/* 底部小圆点指示器 */
+.carousel-dots-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 12px;
+    z-index: 10;
+}
+
+.dot-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.25);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.dot-indicator.active {
+    width: 32px;
+    background: linear-gradient(90deg, #f59e0b, #ef4444);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.8);
 }
 
 /* 底部功能 Dock 导航 */
@@ -1082,14 +1066,8 @@ body {
     border-radius: 7px;
     border: 1px solid #cbd5e1;
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-weight: 900;
-    line-height: 1.1;
     box-sizing: border-box;
-    padding: 3px;
+    overflow: hidden;
     animation: cardDropIn 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -1098,13 +1076,52 @@ body {
     100% { transform: scale(1) translateY(0); opacity: 1; }
 }
 
-.played-poker-card .played-rank {
-    font-size: 17px;
-    font-weight: 900;
+/* 核心修复：左上角角标，保证多张牌横向叠加时，每张牌的点数和花色完整暴露，绝不遮挡！ */
+.played-card-corner {
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+    pointer-events: none;
+    width: 16px;
+    text-align: center;
 }
 
-.played-poker-card .played-suit {
+.played-card-rank {
     font-size: 14px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+
+.played-card-suit {
+    font-size: 11px;
+    line-height: 1;
+    margin-top: 1px;
+}
+
+.played-card-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 26px;
+    opacity: 0.85;
+    pointer-events: none;
+}
+
+.played-card-joker-corner {
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    font-size: 10px;
+    font-weight: 900;
+    line-height: 1.1;
+    text-align: center;
+    pointer-events: none;
 }
 
 /* 不出 / 过 标记徽章 */
@@ -1259,28 +1276,35 @@ body {
 
 .card-corner {
     position: absolute;
-    top: 6px;
-    left: 8px;
+    top: 3px;
+    left: 4px;
+    width: 16px;
+    text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
     line-height: 1;
+    pointer-events: none;
 }
 
 .card-corner-rank {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 900;
+    line-height: 1;
+    letter-spacing: -1px;
 }
 
 .card-corner-suit {
-    font-size: 14px;
+    font-size: 12px;
+    line-height: 1;
+    margin-top: 1px;
 }
 
 .card-corner.bottom-right {
     top: auto;
     left: auto;
-    bottom: 6px;
-    right: 8px;
+    bottom: 3px;
+    right: 4px;
     transform: rotate(180deg);
 }
 
@@ -1291,16 +1315,18 @@ body {
     transform: translate(-50%, -50%);
     font-size: 38px;
     opacity: 0.9;
+    pointer-events: none;
 }
 
 .card-joker-corner {
     position: absolute;
-    top: 8px;
-    left: 10px;
-    font-size: 15px;
+    top: 3px;
+    left: 4px;
+    font-size: 12px;
     font-weight: 900;
     line-height: 1.1;
     text-align: center;
+    pointer-events: none;
 }
 
 .card-joker-center {
@@ -1998,71 +2024,74 @@ body {
         display: none; /* 移动端隐藏以腾出空间 */
     }
 
-    .lobby-marquee-bar {
-        padding: 6px 14px;
+    /* 移动端卡牌滑动轮播器适配 (几乎占满屏幕) */
+    .lobby-carousel-stage {
+        padding: 6px 0 10px;
     }
 
-    #marquee-text {
+    .modes-carousel-track {
+        gap: 16px;
+        padding: 6px calc(50vw - min(43vw, 175px));
+    }
+
+    .mode-slide-card {
+        flex: 0 0 min(86vw, 350px);
+        height: min(66vh, 520px);
+        padding: 18px 16px;
+        border-radius: 22px;
+    }
+
+    .card-hero-emblem {
+        font-size: 58px;
+        margin: 4px 0 2px;
+    }
+
+    .card-mode-title {
+        font-size: 22px;
+        letter-spacing: 2px;
+    }
+
+    .card-mode-tagline {
+        font-size: 11px;
+        margin-bottom: 6px;
+    }
+
+    .card-specs-panel {
+        padding: 10px 14px;
+        gap: 6px;
+        border-radius: 14px;
+    }
+
+    .spec-row {
         font-size: 11px;
     }
 
-    .lobby-main-content {
-        padding: 14px 12px;
-    }
-
-    .lobby-hero-showcase {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 14px 16px;
-        gap: 12px;
-    }
-
-    .hero-avatar-halo {
-        width: 54px;
-        height: 54px;
-        font-size: 30px;
-    }
-
-    .hero-dialogue-bubble {
-        font-size: 12px;
-        padding: 8px 12px;
-    }
-
-    .btn-quick-play {
-        padding: 10px 20px;
-        justify-content: center;
-        width: 100%;
-    }
-
-    .venues-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-    }
-
-    .venue-card {
-        padding: 16px 10px;
-        gap: 8px;
-    }
-
-    .venue-icon {
-        font-size: 34px;
-    }
-
-    .venue-title {
+    .card-enter-btn {
+        padding: 11px 0;
         font-size: 15px;
     }
 
-    .venue-base-score {
-        font-size: 12px;
+    .carousel-arrow {
+        width: 36px;
+        height: 36px;
+        font-size: 24px;
     }
 
-    .venue-entry-req {
-        font-size: 10px;
+    .carousel-arrow.arrow-left { left: 8px; }
+    .carousel-arrow.arrow-right { right: 8px; }
+
+    .carousel-dots-bar {
+        gap: 8px;
+        margin-top: 8px;
     }
 
-    .venue-enter-btn {
-        padding: 5px 14px;
-        font-size: 11px;
+    .dot-indicator {
+        width: 8px;
+        height: 8px;
+    }
+
+    .dot-indicator.active {
+        width: 24px;
     }
 
     .lobby-bottom-dock {
@@ -2282,8 +2311,16 @@ body {
 }
 
 @media (max-width: 480px) {
-    .venues-grid {
-        grid-template-columns: 1fr;
+    .mode-slide-card {
+        flex: 0 0 88vw;
+        height: min(65vh, 480px);
+        padding: 18px 14px;
+    }
+    .card-hero-emblem {
+        font-size: 50px;
+    }
+    .card-mode-title {
+        font-size: 20px;
     }
     .poker-card {
         width: 48px;
