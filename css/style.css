@@ -170,32 +170,21 @@ body {
     color: #ef4444;
 }
 
-/* 中心王牌 (🃏 / 大王) 豪华金箔与王冠 */
+/* 中心王牌 (大王 / 赤金天尊) 皇家金箔卡面与矢量神冕 */
 .splash-card.sc-3 {
-    background: linear-gradient(145deg, #fffbeb 0%, #ffffff 60%, #fef3c7 100%);
-    border: 2px solid #f59e0b;
-    box-shadow: 0 0 28px rgba(245, 158, 11, 0.65), 0 12px 28px rgba(0, 0, 0, 0.55);
-    color: #b45309;
+    background: linear-gradient(145deg, #fffbeb 0%, #fef3c7 45%, #fde68a 100%) !important;
+    border: 2px solid #f59e0b !important;
+    box-shadow: 0 0 28px rgba(245, 158, 11, 0.65), 0 12px 28px rgba(0, 0, 0, 0.55), inset 0 0 0 1px #fff, inset 0 0 0 2px #d97706 !important;
+    color: #991b1b;
     align-items: center;
     text-align: center;
+    position: absolute;
+    overflow: hidden;
 }
-.splash-card.sc-3 .sc-joker-top {
-    font-size: 10px;
-    letter-spacing: 2px;
-    font-weight: 900;
-    color: #d97706;
-    margin-top: 2px;
-}
-.splash-card.sc-3 .sc-center.joker-crown {
-    font-size: 38px;
-    filter: drop-shadow(0 2px 6px rgba(245, 158, 11, 0.4));
-}
-.splash-card.sc-3 .sc-joker-bottom {
-    font-size: 11px;
-    font-weight: 900;
-    color: #b45309;
-    letter-spacing: 2px;
-    margin-bottom: 2px;
+
+.splash-card.sc-3 .card-joker-corner {
+    top: 3px;
+    left: 4px;
 }
 
 /* 彻底解决 Z-Fighting：每张牌拥有固定的独立 Z 深度平层（4px/12px/24px/12px/4px）与专属浮动动画，杜绝图层打架闪烁 */
@@ -949,24 +938,45 @@ body {
 #game-table-container {
     width: 100vw;
     height: 100vh;
-    background: radial-gradient(circle at 50% 50%, #0d2818 0%, #05140b 100%);
+    background: radial-gradient(ellipse at 50% 48%, #165331 0%, #0d3b22 45%, #072314 80%, #020c06 100%);
     position: relative;
     overflow: hidden;
     display: flex;
     flex-direction: column;
 }
 
+/* 牌桌中央暗纹防伪徽标 */
+#game-table-container::after {
+    content: '✦  斗 地 主 宗 师  ✦';
+    position: absolute;
+    top: 48%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 26px;
+    font-weight: 900;
+    font-family: 'Cinzel', 'Noto Serif SC', 'Songti SC', serif;
+    letter-spacing: 12px;
+    color: rgba(245, 158, 11, 0.08);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    pointer-events: none;
+    user-select: none;
+    z-index: 2;
+    white-space: nowrap;
+}
+
 /* 牌桌木制包边与毛呢纹理外圈 */
 #game-table-container::before {
     content: '';
     position: absolute;
-    top: 60px;
-    bottom: 10px;
-    left: 20px;
-    right: 20px;
-    border-radius: 120px;
-    border: 14px solid var(--table-rail-outer);
-    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 0, 0, 0.8);
+    top: 54px;
+    bottom: 12px;
+    left: 18px;
+    right: 18px;
+    border-radius: 110px;
+    border: 12px solid #2b1810;
+    outline: 2px solid rgba(217, 119, 6, 0.35);
+    outline-offset: -8px;
+    box-shadow: inset 0 0 36px rgba(0, 0, 0, 0.85), 0 0 30px rgba(0, 0, 0, 0.9);
     pointer-events: none;
     z-index: 1;
 }
@@ -1271,15 +1281,57 @@ body {
     pointer-events: none;
 }
 
+/* 出牌区：大王 & 小王 尊贵矢量牌型 */
+.played-poker-card.joker-played.joker-big {
+    background: linear-gradient(145deg, #fffbeb, #fef3c7) !important;
+    border: 1.5px solid #f59e0b !important;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.45) !important;
+}
+
+.played-poker-card.joker-played.joker-small {
+    background: linear-gradient(145deg, #f8fafc, #cbd5e1) !important;
+    border: 1.5px solid #64748b !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+}
+
 .played-card-joker-corner {
     position: absolute;
-    top: 3px;
-    left: 4px;
+    top: 2px;
+    left: 3px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+    pointer-events: none;
+    z-index: 3;
+}
+.played-card-joker-corner.big-corner {
+    color: #b91c1c;
+}
+.played-card-joker-corner.small-corner {
+    color: #1e293b;
+}
+.played-card-joker-corner .joker-star {
+    font-size: 8px;
+    line-height: 1;
+}
+.played-card-joker-corner .joker-name {
     font-size: 10px;
     font-weight: 900;
-    line-height: 1.1;
-    text-align: center;
+}
+
+.played-joker-art {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 26px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     pointer-events: none;
+    z-index: 2;
 }
 
 /* 不出 / 过 标记徽章 */
@@ -1340,53 +1392,66 @@ body {
 }
 
 .btn-game-action {
-    padding: 12px 28px;
-    font-size: 16px;
+    padding: 11px 26px;
+    font-size: 15px;
     font-weight: 900;
     border-radius: 30px;
-    border: none;
+    border: 2px solid transparent;
     cursor: pointer;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.3);
-    transition: all 0.15s ease;
+    letter-spacing: 1px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease, filter 0.15s ease;
 }
 
 .btn-game-action:disabled {
-    opacity: 0.4;
+    opacity: 0.35;
     cursor: not-allowed;
     transform: none !important;
+    filter: grayscale(0.8);
 }
 
 .btn-game-action.btn-pass {
-    background: linear-gradient(135deg, #475569, #334155);
-    color: #f1f5f9;
+    background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+    border-color: #64748b;
+    color: #e2e8f0;
+    box-shadow: 0 5px 14px rgba(15, 23, 42, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.2);
 }
 
 .btn-game-action.btn-hint {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-    color: #fff;
-    box-shadow: 0 6px 18px rgba(59, 130, 246, 0.5);
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    border-color: #60a5fa;
+    color: #ffffff;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.35);
 }
 
 .btn-game-action.btn-play {
-    background: linear-gradient(135deg, #ef4444, #b91c1c);
-    color: #fff;
-    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    border-color: #fca5a5;
+    color: #ffffff;
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.4);
 }
 
 .btn-game-action.btn-bid {
-    background: linear-gradient(135deg, #f59e0b, #b45309);
-    color: #fff;
-    box-shadow: 0 6px 18px rgba(245, 158, 11, 0.5);
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+    border-color: #fde68a;
+    color: #ffffff;
+    box-shadow: 0 6px 18px rgba(217, 119, 6, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.4);
 }
 
 .btn-game-action.btn-double {
-    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-    color: #fff;
-    box-shadow: 0 6px 18px rgba(139, 92, 246, 0.5);
+    background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+    border-color: #c4b5fd;
+    color: #ffffff;
+    box-shadow: 0 6px 18px rgba(124, 58, 237, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.4);
 }
 
 .btn-game-action:hover:not(:disabled) {
-    transform: translateY(-4px) scale(1.04);
+    transform: translateY(-3px) scale(1.03);
+    filter: brightness(1.1);
+}
+
+.btn-game-action:active:not(:disabled) {
+    transform: translateY(1px) scale(0.97);
 }
 
 /* 玩家手牌区 */
@@ -1412,13 +1477,14 @@ body {
     position: absolute;
     width: 90px;
     height: 132px;
-    background: #ffffff;
+    background: linear-gradient(155deg, #ffffff 0%, #fbf9f4 60%, #f4eee2 100%);
     border-radius: 10px;
-    border: 1px solid #cbd5e1;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    border: 1px solid #d4c8b8;
+    box-shadow: 0 5px 16px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.9), inset 0 0 10px rgba(0, 0, 0, 0.03);
     cursor: pointer;
     transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.18s ease;
     overflow: hidden;
+    user-select: none;
 }
 
 .poker-card:hover {
@@ -1443,6 +1509,7 @@ body {
     align-items: center;
     line-height: 1;
     pointer-events: none;
+    z-index: 5;
 }
 
 .card-corner-rank {
@@ -1466,6 +1533,20 @@ body {
     transform: rotate(180deg);
 }
 
+.card-watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 58px;
+    font-weight: 900;
+    font-family: 'Cinzel', 'Times New Roman', serif;
+    color: rgba(180, 83, 9, 0.06);
+    pointer-events: none;
+    user-select: none;
+    z-index: 1;
+}
+
 .card-center {
     position: absolute;
     top: 50%;
@@ -1474,25 +1555,157 @@ body {
     font-size: 38px;
     opacity: 0.9;
     pointer-events: none;
+    z-index: 2;
 }
 
+/* 大王 & 小王：典藏矢量卡牌材质与外边框 */
+.poker-card.joker-card {
+    border-width: 1.5px;
+    overflow: hidden;
+}
+
+/* 大王：赤金天尊 (Red Joker) */
+.poker-card.joker-big {
+    background: linear-gradient(150deg, #fffdf2 0%, #fff6cc 40%, #feedab 100%);
+    border-color: #d97706;
+    box-shadow: 0 6px 20px rgba(217, 119, 6, 0.35), inset 0 0 0 1px rgba(254, 240, 138, 0.8), inset 0 0 14px rgba(245, 158, 11, 0.25);
+}
+
+/* 小王：玄银地煞 (Black Joker) */
+.poker-card.joker-small {
+    background: linear-gradient(150deg, #f8fafc 0%, #edf2f7 40%, #dbe2ec 100%);
+    border-color: #64748b;
+    box-shadow: 0 6px 20px rgba(100, 116, 139, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.9), inset 0 0 14px rgba(148, 163, 184, 0.25);
+}
+
+/* 大小王左上角角标（不被遮挡） */
 .card-joker-corner {
     position: absolute;
     top: 3px;
     left: 4px;
-    font-size: 12px;
-    font-weight: 900;
-    line-height: 1.1;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.05;
     pointer-events: none;
+    z-index: 6;
 }
 
-.card-joker-center {
+.card-joker-corner.big-corner {
+    color: #b91c1c;
+    text-shadow: 0 1px 2px rgba(185, 28, 28, 0.25);
+}
+
+.card-joker-corner.small-corner {
+    color: #0f172a;
+    text-shadow: 0 1px 2px rgba(15, 23, 42, 0.25);
+}
+
+.card-joker-corner .joker-star {
+    font-size: 11px;
+    margin-bottom: 1px;
+}
+
+.card-joker-corner.big-corner .joker-star {
+    color: #f59e0b;
+}
+
+.card-joker-corner.small-corner .joker-star {
+    color: #64748b;
+}
+
+.card-joker-corner .joker-chinese {
+    font-size: 13px;
+    font-weight: 900;
+    font-family: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+    letter-spacing: -0.5px;
+    margin-bottom: 1px;
+}
+
+.card-joker-corner .joker-latin {
+    font-size: 7.5px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    opacity: 0.85;
+    line-height: 1.05;
+}
+
+/* 皇家矢量艺术主舞台 */
+.joker-art-stage {
     position: absolute;
-    top: 50%;
+    top: 45%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 44px;
+    width: 60px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.joker-art-stage svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
+}
+
+/* 尊贵头衔丝带 */
+.joker-prestige-ribbon {
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 8.5px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 4;
+}
+
+.ribbon-big {
+    background: linear-gradient(135deg, #78350f 0%, #b45309 50%, #d97706 100%);
+    color: #fef3c7;
+    border: 1px solid rgba(253, 230, 138, 0.7);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.ribbon-small {
+    background: linear-gradient(135deg, #0f172a 0%, #334155 50%, #475569 100%);
+    color: #e2e8f0;
+    border: 1px solid rgba(203, 213, 225, 0.6);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* 全息镭射反光层 */
+.joker-holo-foil {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(135deg, transparent 20%, rgba(255, 255, 255, 0.25) 45%, rgba(254, 240, 138, 0.4) 50%, rgba(255, 255, 255, 0.25) 55%, transparent 80%);
+    background-size: 220% 220%;
+    animation: holoShimmer 4s ease-in-out infinite;
+    mix-blend-mode: overlay;
+    z-index: 3;
+}
+
+@keyframes holoShimmer {
+    0%, 100% {
+        background-position: 0% 0%;
+        opacity: 0.3;
+    }
+    50% {
+        background-position: 100% 100%;
+        opacity: 0.8;
+    }
 }
 
 /* 记牌器 HUD */
@@ -2635,6 +2848,51 @@ body.force-landscape-mode {
         font-size: 16px;
     }
 
+    .card-watermark {
+        font-size: 26px;
+    }
+
+    /* 横屏模式下大小王微型化自适应 */
+    .poker-card.joker-card .joker-art-stage {
+        width: 30px;
+        height: 36px;
+        top: 46%;
+    }
+
+    .poker-card.joker-card .card-joker-corner {
+        top: 2px;
+        left: 2px;
+    }
+
+    .poker-card.joker-card .card-joker-corner .joker-star {
+        font-size: 7px;
+    }
+
+    .poker-card.joker-card .card-joker-corner .joker-chinese {
+        font-size: 8px;
+    }
+
+    .poker-card.joker-card .card-joker-corner .joker-latin {
+        font-size: 4.5px;
+    }
+
+    .poker-card.joker-card .joker-prestige-ribbon {
+        font-size: 5.5px;
+        padding: 1px 3px;
+        bottom: 2px;
+        letter-spacing: 0;
+    }
+
+    .played-joker-art {
+        width: 18px;
+        height: 22px;
+    }
+
+    #game-table-container::after {
+        font-size: 15px;
+        letter-spacing: 5px;
+    }
+
     /* 弹窗在横屏下自动优化宽度和高度 */
     .modal-content-panel {
         width: 90vw !important;
@@ -2721,5 +2979,52 @@ body.force-landscape-mode {
     .dock-btn {
         padding: 4px 5px;
         font-size: 9px;
+    }
+
+    .poker-card {
+        width: 54px;
+        height: 78px;
+        border-radius: 6px;
+    }
+
+    .card-corner {
+        top: 2px;
+        left: 3px;
+    }
+
+    .card-corner-rank {
+        font-size: 13px;
+    }
+
+    .card-corner-suit {
+        font-size: 9px;
+    }
+
+    .card-center {
+        font-size: 20px;
+    }
+
+    .card-watermark {
+        font-size: 32px;
+    }
+
+    .poker-card.joker-card .joker-art-stage {
+        width: 36px;
+        height: 42px;
+        top: 46%;
+    }
+
+    .poker-card.joker-card .card-joker-corner .joker-chinese {
+        font-size: 9px;
+    }
+
+    .poker-card.joker-card .card-joker-corner .joker-latin {
+        font-size: 5px;
+    }
+
+    .poker-card.joker-card .joker-prestige-ribbon {
+        font-size: 6px;
+        padding: 1px 4px;
+        bottom: 2px;
     }
 }

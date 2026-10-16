@@ -3,6 +3,95 @@
  * 负责牌桌交互、三方独立出牌区、全量出牌历史记录、移动端手牌自适应与触控选牌
  */
 
+// 👑 赤金天尊 · 大王 (Red Joker) 专属皇家矢量太阳龙冠
+const BIG_JOKER_SVG = `
+<svg class="joker-svg" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.8"/>
+      <stop offset="60%" stop-color="#f59e0b" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#b45309" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="goldCrown" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fffbeb"/>
+      <stop offset="25%" stop-color="#fef08a"/>
+      <stop offset="60%" stop-color="#f59e0b"/>
+      <stop offset="85%" stop-color="#b45309"/>
+      <stop offset="100%" stop-color="#78350f"/>
+    </linearGradient>
+    <linearGradient id="rubyGem" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fca5a5"/>
+      <stop offset="50%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#991b1b"/>
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="54" r="42" fill="url(#sunGlow)"/>
+  <g stroke="#f59e0b" stroke-width="1.2" opacity="0.65" stroke-dasharray="2 4">
+    <line x1="50" y1="12" x2="50" y2="4"/>
+    <line x1="50" y1="96" x2="50" y2="104"/>
+    <line x1="8" y1="54" x2="16" y2="54"/>
+    <line x1="84" y1="54" x2="92" y2="54"/>
+    <line x1="20" y1="24" x2="26" y2="30"/>
+    <line x1="74" y1="78" x2="80" y2="84"/>
+    <line x1="80" y1="24" x2="74" y2="30"/>
+    <line x1="26" y1="78" x2="20" y2="84"/>
+  </g>
+  <path d="M18 64 C22 45 35 38 46 44 C42 54 36 60 26 66 Z" fill="url(#goldCrown)" opacity="0.9"/>
+  <path d="M82 64 C78 45 65 38 54 44 C58 54 64 60 74 66 Z" fill="url(#goldCrown)" opacity="0.9"/>
+  <path d="M26 68 L32 38 L42 50 L50 26 L58 50 L68 38 L74 68 Z" fill="url(#goldCrown)" stroke="#78350f" stroke-width="1"/>
+  <rect x="25" y="68" width="50" height="9" rx="3" fill="#b45309" stroke="#fef08a" stroke-width="1"/>
+  <circle cx="50" cy="27" r="3.5" fill="url(#rubyGem)" stroke="#fff" stroke-width="0.8"/>
+  <circle cx="32" cy="39" r="2.8" fill="url(#rubyGem)" stroke="#fff" stroke-width="0.6"/>
+  <circle cx="68" cy="39" r="2.8" fill="url(#rubyGem)" stroke="#fff" stroke-width="0.6"/>
+  <circle cx="36" cy="72.5" r="2.2" fill="url(#rubyGem)"/>
+  <circle cx="50" cy="72.5" r="2.5" fill="url(#rubyGem)"/>
+  <circle cx="64" cy="72.5" r="2.2" fill="url(#rubyGem)"/>
+  <path d="M50 82 L50 110 M44 88 L56 88" stroke="url(#goldCrown)" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="50" cy="88" r="3.2" fill="url(#rubyGem)" stroke="#fef08a" stroke-width="1"/>
+</svg>`;
+
+// 🌙 玄银地煞 · 小王 (Black Joker) 专属铂金月冕神杖
+const SMALL_JOKER_SVG = `
+<svg class="joker-svg" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#93c5fd" stop-opacity="0.7"/>
+      <stop offset="60%" stop-color="#3b82f6" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#1e1b4b" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="silverFoil" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="30%" stop-color="#e2e8f0"/>
+      <stop offset="65%" stop-color="#94a3b8"/>
+      <stop offset="90%" stop-color="#475569"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="sapphireGem" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a5f3fc"/>
+      <stop offset="50%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="54" r="42" fill="url(#moonGlow)"/>
+  <g stroke="#94a3b8" stroke-width="1" opacity="0.6">
+    <circle cx="22" cy="30" r="1.5" fill="#e2e8f0"/>
+    <circle cx="78" cy="30" r="1.5" fill="#e2e8f0"/>
+    <circle cx="20" cy="75" r="1.2" fill="#e2e8f0"/>
+    <circle cx="80" cy="75" r="1.2" fill="#e2e8f0"/>
+  </g>
+  <path d="M50 20 C68 20 80 36 78 56 C76 74 60 88 42 86 C58 82 66 68 64 52 C62 38 52 28 50 20 Z" fill="url(#silverFoil)" opacity="0.85"/>
+  <path d="M28 66 L30 42 L42 54 L50 32 L58 54 L70 42 L72 66 Z" fill="url(#silverFoil)" stroke="#334155" stroke-width="1"/>
+  <rect x="27" y="66" width="46" height="8" rx="2.5" fill="#1e293b" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="50" cy="33" r="3.2" fill="url(#sapphireGem)" stroke="#fff" stroke-width="0.8"/>
+  <circle cx="30" cy="43" r="2.4" fill="url(#sapphireGem)" stroke="#fff" stroke-width="0.6"/>
+  <circle cx="70" cy="43" r="2.4" fill="url(#sapphireGem)" stroke="#fff" stroke-width="0.6"/>
+  <circle cx="36" cy="70" r="1.8" fill="url(#sapphireGem)"/>
+  <circle cx="50" cy="70" r="2.2" fill="url(#sapphireGem)"/>
+  <circle cx="64" cy="70" r="1.8" fill="url(#sapphireGem)"/>
+  <path d="M50 78 L50 110 M44 84 L56 84" stroke="url(#silverFoil)" stroke-width="2.2" stroke-linecap="round"/>
+  <circle cx="50" cy="84" r="2.8" fill="url(#sapphireGem)" stroke="#cbd5e1" stroke-width="0.8"/>
+</svg>`;
+
 class TableRenderer {
     constructor(gameEngine, effects, audio) {
         this.engine = gameEngine;
@@ -199,11 +288,23 @@ class TableRenderer {
                 `translateY(-26px) rotate(${rot}deg)` : 
                 `translateY(${yArch}px) rotate(${rot}deg)`;
 
-            // 卡牌牌面设计（左上角角标紧凑布局，彻底杜绝遮挡）
+            // 卡牌牌面设计（大王/小王尊贵矢量艺术 + 标准牌高级水印）
             if (card.isJoker) {
+                const isBig = card.rank === 17;
+                cardEl.className = `poker-card rank-${card.rank} joker-card ${isBig ? 'joker-big' : 'joker-small'}`;
                 cardEl.innerHTML = `
-                    <div class="card-joker-corner" style="color: ${card.color}">${card.rank === 17 ? '大<br>王' : '小<br>王'}</div>
-                    <div class="card-joker-center" style="color: ${card.color}">🃏</div>
+                    <div class="card-joker-corner ${isBig ? 'big-corner' : 'small-corner'}">
+                        <span class="joker-star">${isBig ? '★' : '✦'}</span>
+                        <span class="joker-chinese">${isBig ? '大<br>王' : '小<br>王'}</span>
+                        <span class="joker-latin">J<br>O<br>K<br>E<br>R</span>
+                    </div>
+                    <div class="joker-art-stage">
+                        ${isBig ? BIG_JOKER_SVG : SMALL_JOKER_SVG}
+                    </div>
+                    <div class="joker-prestige-ribbon ${isBig ? 'ribbon-big' : 'ribbon-small'}">
+                        ${isBig ? '赤金天尊' : '玄银地煞'}
+                    </div>
+                    <div class="joker-holo-foil"></div>
                 `;
             } else {
                 cardEl.innerHTML = `
@@ -211,6 +312,7 @@ class TableRenderer {
                         <div class="card-corner-rank">${card.name}</div>
                         <div class="card-corner-suit">${card.suit}</div>
                     </div>
+                    ${card.rank >= 11 ? `<div class="card-watermark">${card.name}</div>` : ''}
                     <div class="card-center" style="color: ${card.color}">${card.suit}</div>
                     <div class="card-corner bottom-right" style="color: ${card.color}">
                         <div class="card-corner-rank">${card.name}</div>
@@ -513,17 +615,25 @@ class TableRenderer {
 
         cards.forEach((card, idx) => {
             const cardEl = document.createElement('div');
-            cardEl.className = 'played-poker-card';
             cardEl.style.left = `${idx * overlap}px`;
             cardEl.style.zIndex = idx + 1;
             cardEl.style.color = card.color;
 
             if (card.isJoker) {
+                const isBig = card.rank === 17;
+                cardEl.className = `played-poker-card joker-played ${isBig ? 'joker-big' : 'joker-small'}`;
                 cardEl.innerHTML = `
-                    <div class="played-card-joker-corner" style="color: ${card.color}">${card.rank === 17 ? '大<br>王' : '小<br>王'}</div>
-                    <div class="played-card-center" style="color: ${card.color}">🃏</div>
+                    <div class="played-card-joker-corner ${isBig ? 'big-corner' : 'small-corner'}">
+                        <span class="joker-star">${isBig ? '★' : '✦'}</span>
+                        <span class="joker-name">${isBig ? '大王' : '小王'}</span>
+                    </div>
+                    <div class="played-joker-art">
+                        ${isBig ? BIG_JOKER_SVG : SMALL_JOKER_SVG}
+                    </div>
+                    <div class="joker-holo-foil"></div>
                 `;
             } else {
+                cardEl.className = 'played-poker-card';
                 cardEl.innerHTML = `
                     <div class="played-card-corner" style="color: ${card.color}">
                         <div class="played-card-rank">${card.name}</div>

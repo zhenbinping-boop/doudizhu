@@ -47,10 +47,55 @@
                 <div class="sc-corner"><span>♥</span><span>K</span></div>
                 <div class="sc-center">♥</div>
             </div>
-            <div class="splash-card sc-3">
-                <div class="sc-joker-top">JOKER</div>
-                <div class="sc-center joker-crown">👑</div>
-                <div class="sc-joker-bottom">斗地主</div>
+            <div class="splash-card sc-3 joker-card joker-big">
+                <div class="card-joker-corner big-corner">
+                    <span class="joker-star">★</span>
+                    <span class="joker-chinese">大<br>王</span>
+                </div>
+                <div class="joker-art-stage">
+                    <svg class="joker-svg" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+                      <defs>
+                        <radialGradient id="sunGlowSplash" cx="50%" cy="50%" r="50%">
+                          <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.8"/>
+                          <stop offset="60%" stop-color="#f59e0b" stop-opacity="0.25"/>
+                          <stop offset="100%" stop-color="#b45309" stop-opacity="0"/>
+                        </radialGradient>
+                        <linearGradient id="goldCrownSplash" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stop-color="#fffbeb"/>
+                          <stop offset="25%" stop-color="#fef08a"/>
+                          <stop offset="60%" stop-color="#f59e0b"/>
+                          <stop offset="85%" stop-color="#b45309"/>
+                          <stop offset="100%" stop-color="#78350f"/>
+                        </linearGradient>
+                        <linearGradient id="rubyGemSplash" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stop-color="#fca5a5"/>
+                          <stop offset="50%" stop-color="#ef4444"/>
+                          <stop offset="100%" stop-color="#991b1b"/>
+                        </linearGradient>
+                      </defs>
+                      <circle cx="50" cy="54" r="42" fill="url(#sunGlowSplash)"/>
+                      <g stroke="#f59e0b" stroke-width="1.2" opacity="0.65" stroke-dasharray="2 4">
+                        <line x1="50" y1="12" x2="50" y2="4"/>
+                        <line x1="50" y1="96" x2="50" y2="104"/>
+                        <line x1="8" y1="54" x2="16" y2="54"/>
+                        <line x1="84" y1="54" x2="92" y2="54"/>
+                      </g>
+                      <path d="M18 64 C22 45 35 38 46 44 C42 54 36 60 26 66 Z" fill="url(#goldCrownSplash)" opacity="0.9"/>
+                      <path d="M82 64 C78 45 65 38 54 44 C58 54 64 60 74 66 Z" fill="url(#goldCrownSplash)" opacity="0.9"/>
+                      <path d="M26 68 L32 38 L42 50 L50 26 L58 50 L68 38 L74 68 Z" fill="url(#goldCrownSplash)" stroke="#78350f" stroke-width="1"/>
+                      <rect x="25" y="68" width="50" height="9" rx="3" fill="#b45309" stroke="#fef3c7" stroke-width="1"/>
+                      <circle cx="50" cy="27" r="3.5" fill="url(#rubyGemSplash)" stroke="#fff" stroke-width="0.8"/>
+                      <circle cx="32" cy="39" r="2.8" fill="url(#rubyGemSplash)" stroke="#fff" stroke-width="0.6"/>
+                      <circle cx="68" cy="39" r="2.8" fill="url(#rubyGemSplash)" stroke="#fff" stroke-width="0.6"/>
+                      <circle cx="36" cy="72.5" r="2.2" fill="url(#rubyGemSplash)"/>
+                      <circle cx="50" cy="72.5" r="2.5" fill="url(#rubyGemSplash)"/>
+                      <circle cx="64" cy="72.5" r="2.2" fill="url(#rubyGemSplash)"/>
+                      <path d="M50 82 L50 110 M44 88 L56 88" stroke="url(#goldCrownSplash)" stroke-width="2.5" stroke-linecap="round"/>
+                      <circle cx="50" cy="88" r="3.2" fill="url(#rubyGemSplash)" stroke="#fef08a" stroke-width="1"/>
+                    </svg>
+                </div>
+                <div class="joker-prestige-ribbon ribbon-big">赤金天尊</div>
+                <div class="joker-holo-foil"></div>
             </div>
             <div class="splash-card sc-4">
                 <div class="sc-corner"><span>♣</span><span>Q</span></div>
