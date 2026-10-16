@@ -2,7 +2,10 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0f18">
     <title>斗地主宗师 - 经典与局外成长</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -31,7 +34,7 @@
             <span class="btn-shine"></span>
             <span class="btn-text">👑 点击进入游戏 👑</span>
         </button>
-        <div class="splash-version">v2.0 豪华臻享版 · 离线/在线自适应</div>
+        <div class="splash-version">v2.1 移动优化·全量历史回顾·豪华版</div>
     </div>
 
     <!-- ==============================================
@@ -55,7 +58,7 @@
 
             <div class="hud-currencies-box">
                 <button class="btn-relief-alert" id="btn-claim-relief" style="display: none;">
-                    🆘 领取救济金 (3,000)
+                    🆘 救济金 3,000
                 </button>
                 <div class="currency-pill coins">
                     <span>🪙</span>
@@ -69,65 +72,104 @@
                     <span>⚡</span>
                     <span id="lobby-energy-val">20/30</span>
                 </div>
-                <button class="btn-debug" id="btn-debug-cheat">⚙️ 获得调试资源</button>
+                <button class="btn-debug" id="btn-debug-cheat">⚙️ 调试资源</button>
             </div>
         </header>
 
-        <!-- 大厅场次选择区 -->
+        <!-- 走马灯动态快报 -->
+        <div class="lobby-marquee-bar">
+            <span class="marquee-icon">📢</span>
+            <div class="marquee-scroll-container">
+                <span id="marquee-text">热烈欢迎来到《斗地主宗师》！当前全服高手云集，排位赛季激战正酣！</span>
+            </div>
+        </div>
+
+        <!-- 大厅核心内容区 -->
         <main class="lobby-main-content">
+            <!-- 主角立绘与快速开始推荐栏 -->
+            <div class="lobby-hero-showcase">
+                <div class="hero-character-box">
+                    <div class="hero-avatar-halo" id="lobby-hero-avatar">🌾</div>
+                    <div class="hero-dialogue-bubble" id="lobby-hero-quote">
+                        "牌友你好！今天手气正旺，点击【快速开始】来一局巅峰对决吧！"
+                    </div>
+                </div>
+                <div class="hero-quick-action">
+                    <button class="btn-quick-play" id="btn-quick-start">
+                        <span class="quick-play-icon">⚡</span>
+                        <div class="quick-play-text">
+                            <div class="qp-main">快速开始</div>
+                            <div class="qp-sub" id="qp-recommended-venue">自动匹配最优场次</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
             <div class="section-banner-title">
-                🎴 选择对局模式与场次
+                🎴 经典场次与特色玩法
             </div>
 
             <div class="venues-grid">
                 <!-- 新手场 -->
-                <div class="venue-card" data-venue="novice" data-mode="CLASSIC">
+                <div class="venue-card theme-novice" data-venue="novice" data-mode="CLASSIC">
+                    <div class="venue-top-tag">初出茅庐</div>
                     <div class="venue-icon">🌱</div>
                     <div class="venue-title">新手初级场</div>
                     <div class="venue-base-score">底分：100</div>
                     <div class="venue-entry-req">准入要求：500 金币</div>
+                    <button class="venue-enter-btn">立即入场</button>
                 </div>
 
                 <!-- 进阶场 -->
-                <div class="venue-card" data-venue="expert" data-mode="CLASSIC">
+                <div class="venue-card theme-expert" data-venue="expert" data-mode="CLASSIC">
+                    <div class="venue-top-tag">小试牛刀</div>
                     <div class="venue-icon">🔥</div>
                     <div class="venue-title">进阶高手场</div>
                     <div class="venue-base-score">底分：500</div>
                     <div class="venue-entry-req">准入要求：3,000 金币</div>
+                    <button class="venue-enter-btn">立即入场</button>
                 </div>
 
                 <!-- 大师场 -->
-                <div class="venue-card" data-venue="master" data-mode="CLASSIC">
+                <div class="venue-card theme-master" data-venue="master" data-mode="CLASSIC">
+                    <div class="venue-top-tag">荣耀王者</div>
                     <div class="venue-icon">👑</div>
                     <div class="venue-title">大师荣耀场</div>
                     <div class="venue-base-score">底分：2,000</div>
                     <div class="venue-entry-req">准入要求：15,000 金币</div>
+                    <button class="venue-enter-btn">立即入场</button>
                 </div>
 
                 <!-- 巅峰场 -->
-                <div class="venue-card" data-venue="legend" data-mode="CLASSIC">
+                <div class="venue-card theme-legend" data-venue="legend" data-mode="CLASSIC">
+                    <div class="venue-top-tag">一战成神</div>
                     <div class="venue-icon">🐉</div>
                     <div class="venue-title">至尊巅峰场</div>
                     <div class="venue-base-score">底分：10,000</div>
                     <div class="venue-entry-req">准入要求：100,000 金币</div>
+                    <button class="venue-enter-btn">立即入场</button>
                 </div>
 
                 <!-- 不洗牌狂欢场 -->
-                <div class="venue-card" data-venue="no_shuffle" data-mode="NO_SHUFFLE">
-                    <span class="venue-badge-hot">火爆</span>
+                <div class="venue-card theme-noshuffle" data-venue="no_shuffle" data-mode="NO_SHUFFLE">
+                    <span class="venue-badge-hot">高炸</span>
+                    <div class="venue-top-tag">狂暴翻倍</div>
                     <div class="venue-icon">⚡</div>
                     <div class="venue-title">不洗牌狂欢场</div>
-                    <div class="venue-base-score">底分：800 (高炸爽快)</div>
+                    <div class="venue-base-score">底分：800 (超多炸弹)</div>
                     <div class="venue-entry-req">准入要求：5,000 金币</div>
+                    <button class="venue-enter-btn">立即入场</button>
                 </div>
 
                 <!-- 残局闯关解谜 -->
-                <div class="venue-card" id="nav-puzzle-btn" data-mode="PUZZLE">
+                <div class="venue-card theme-puzzle" id="nav-puzzle-btn" data-mode="PUZZLE">
                     <span class="venue-badge-hot">益智</span>
+                    <div class="venue-top-tag">单人解密</div>
                     <div class="venue-icon">🧩</div>
                     <div class="venue-title">残局解密闯关</div>
-                    <div class="venue-base-score">挑战 6 大经典残局</div>
-                    <div class="venue-entry-req">零门槛·通关赢海量钻石</div>
+                    <div class="venue-base-score">6 大经典烧脑残局</div>
+                    <div class="venue-entry-req">零门槛 · 破局赢钻石</div>
+                    <button class="venue-enter-btn">挑战残局</button>
                 </div>
             </div>
         </main>
@@ -180,6 +222,7 @@
             </div>
 
             <div class="table-top-right">
+                <button class="btn-hud-tool" id="btn-open-history">📜 牌局历史</button>
                 <button class="btn-hud-tool" id="toggle-counter-btn">👁️ 记牌器</button>
             </div>
         </div>
@@ -200,8 +243,15 @@
                 <div id="ai-right-hand"></div>
             </div>
 
-            <!-- 牌桌中央出牌区 -->
-            <div id="table-center-area"></div>
+            <!-- 三方独立出牌区（彻底解决玩家看不到出过的牌的问题） -->
+            <div class="table-play-zones-wrapper">
+                <!-- 下家电脑（左）当前出的牌 -->
+                <div class="seat-play-zone play-zone-left" id="play-zone-1"></div>
+                <!-- 上家电脑（右）当前出的牌 -->
+                <div class="seat-play-zone play-zone-right" id="play-zone-2"></div>
+                <!-- 玩家自身（中下）当前出的牌 -->
+                <div class="seat-play-zone play-zone-player" id="play-zone-0"></div>
+            </div>
 
             <!-- 玩家操作控制面板 (动态显隐) -->
             <div class="table-actions-container">
@@ -234,7 +284,7 @@
             </div>
 
             <!-- 悬浮记牌器 -->
-            <div id="card-counter-hud"></div>
+            <div id="card-counter-hud" class="hidden"></div>
         </div>
     </div>
 
@@ -256,7 +306,33 @@
     </div>
 
     <!-- ==============================================
-         4. 各类局外系统弹窗 (MODALS)
+         4. 牌局全量出牌历史明细弹窗 (HISTORY LOG MODAL)
+         ============================================== -->
+    <div class="app-modal hidden" id="history-log-modal">
+        <div class="modal-content-panel">
+            <div class="modal-header">
+                <h3>📜 牌局全量出牌历史与追踪</h3>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="history-tabs-nav">
+                    <button class="history-tab-btn active" id="tab-btn-timeline">出牌回合流水</button>
+                    <button class="history-tab-btn" id="tab-btn-cards">54张已出分布</button>
+                </div>
+                <div id="history-timeline-view" class="history-tab-content">
+                    <div id="history-rounds-list" class="history-timeline-list">
+                        <div class="history-empty-tip">本局尚未开始出牌</div>
+                    </div>
+                </div>
+                <div id="history-cards-view" class="history-tab-content hidden">
+                    <div id="history-cards-grid" class="history-cards-matrix"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==============================================
+         5. 各类局外系统弹窗 (MODALS)
          ============================================== -->
     <!-- 角色养成弹窗 -->
     <div class="app-modal hidden" id="character-modal">
@@ -357,7 +433,7 @@
     </div>
 
     <!-- ==============================================
-         5. 业务逻辑脚本加载
+         6. 业务逻辑脚本加载
          ============================================== -->
     <script src="js/core/Card.js"></script>
     <script src="js/core/Deck.js"></script>

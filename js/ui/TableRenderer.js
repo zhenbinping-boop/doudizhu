@@ -1,6 +1,6 @@
 /**
  * TableRenderer.js
- * 负责牌桌交互、卡牌排布、拖拽/点击多选、出牌区渲染、记牌器HUD与结算弹窗
+ * 负责牌桌交互、三方独立出牌区、全量出牌历史记录、移动端手牌自适应与触控选牌
  */
 
 class TableRenderer {
@@ -13,8 +13,19 @@ class TableRenderer {
         this.hintIndex = 0;
         this.currentHints = [];
 
+        // 牌局出牌历史流水
+        this.matchPlayHistory = [];
+        this.playedCardsSet = new Set(); // 记录所有已被打出的 card.id
+
         this.initDom();
         this.bindEngineEvents();
+
+        // 监听屏幕尺寸改变，保持移动端手牌完美居中自适应
+        window.addEventListener('resize', () => {
+            if (this.engine.playerHands[0] && this.engine.playerHands[0].length > 0) {
+                this.renderPlayerHand(this.engine.playerHands[0]);
+            }
+        });
     }
 
     initDom() {
@@ -22,7 +33,13 @@ class TableRenderer {
         this.aiLeftHandEl = document.getElementById('ai-left-hand');
         this.aiRightHandEl = document.getElementById('ai-right-hand');
 
-        this.tableCenterEl = document.getElementById('table-center-area');
+        // 三方独立出牌区
+        this.playZones = [
+            document.getElementById('play-zone-0'), // 玩家
+            document.getElementById('play-zone-1'), // 左侧 AI
+            document.getElementById('play-zone-2')  // 右侧 AI
+        ];
+
         this.bottomCardsEl = document.getElementById('bottom-cards-bar');
         this.multipliersEl = document.getElementById('game-multipliers-badge');
         this.venueTitleEl = document.getElementById('game-venue-title');
@@ -35,14 +52,41 @@ class TableRenderer {
         this.gameOverModal = document.getElementById('game-over-modal');
 
         // 记牌器开关
-        const counterToggleBtn = document.getElementById('toggle-counter-btn');
-        if (counterToggleBtn) {
-            counterToggleBtn.addEventListener('click', () => {
-                if (this.cardCounterEl) {
-                    this.cardCounterEl.classList.toggle('hidden');
-                }
-            });
-        }
+        document.getElementById('toggle-counter-btn')?.addEventListener('click', () => {
+            if (this.cardCounterEl) {
+                this.cardCounterEl.classList.toggle('hidden');
+            }
+        });
+
+        // 历史出牌记录弹窗
+        this.historyModal = document.getElementById('history-log-modal');
+        this.historyTimelineList = document.getElementById('history-rounds-list');
+        this.historyCardsGrid = document.getElementById('history-cards-grid');
+
+        document.getElementById('btn-open-history')?.addEventListener('click', () => {
+            this.openHistoryModal();
+        });
+
+        // 历史弹窗内标签切换
+        const tabTimeline = document.getElementById('tab-btn-timeline');
+        const tabCards = document.getElementById('tab-btn-cards');
+        const viewTimeline = document.getElementById('history-timeline-view');
+        const viewCards = document.getElementById('history-cards-view');
+
+        tabTimeline?.addEventListener('click', () => {
+            tabTimeline.classList.add('active');
+            tabCards?.classList.remove('active');
+            viewTimeline?.classList.remove('hidden');
+            viewCards?.classList.add('hidden');
+        });
+
+        tabCards?.addEventListener('click', () => {
+            tabCards.classList.add('active');
+            tabTimeline?.classList.remove('active');
+            viewCards?.classList.remove('hidden');
+            viewTimeline?.classList.add('hidden');
+            this.renderCardsDistributionMatrix();
+        });
     }
 
     bindEngineEvents() {
@@ -69,6 +113,8 @@ class TableRenderer {
         this.venueTitleEl.innerText = `${venue.name} (底分:${venue.baseScore})`;
         this.multipliersEl.innerText = `倍数: 1x`;
         this.clearTable();
+        this.matchPlayHistory = [];
+        this.playedCardsSet.clear();
         this.renderPlayerHand(playerHands[0]);
         this.renderAiHands(playerHands[1].length, playerHands[2].length);
         this.renderBottomCards(bottomCards, false); // 初始背面朝上
@@ -79,10 +125,16 @@ class TableRenderer {
         this.selectedCards.clear();
         this.hintIndex = 0;
         this.currentHints = [];
-        this.tableCenterEl.innerHTML = '';
+        this.clearAllPlayZones();
         this.hideAllActionPanels();
         document.querySelectorAll('.player-speech-bubble').forEach(el => el.remove());
         document.querySelectorAll('.role-tag').forEach(el => el.remove());
+    }
+
+    clearAllPlayZones() {
+        this.playZones.forEach(zone => {
+            if (zone) zone.innerHTML = '';
+        });
     }
 
     hideAllActionPanels() {
@@ -91,34 +143,47 @@ class TableRenderer {
         if (this.doubleActionsEl) this.doubleActionsEl.classList.add('hidden');
     }
 
-    // 渲染自己手牌
+    /**
+     * 渲染自己手牌（自适应移动端与桌面端，支持动态扇形和触屏操作）
+     */
     renderPlayerHand(cards) {
         if (!this.playerHandEl) return;
         this.playerHandEl.innerHTML = '';
         const len = cards.length;
+        if (len === 0) return;
+
+        const screenWidth = window.innerWidth;
+        const isMobile = screenWidth <= 768;
+        const cardWidth = isMobile ? 54 : 86;
+        const maxTotalWidth = Math.min(screenWidth - 20, isMobile ? screenWidth - 10 : 760);
+
+        // 自适应重叠间距，确保 17~20 张牌永远不超出屏幕！
+        const overlap = len <= 1 ? 0 : Math.min(cardWidth * 0.52, Math.max(isMobile ? 15 : 24, (maxTotalWidth - cardWidth) / (len - 1)));
+        const totalWidth = (len - 1) * overlap + cardWidth;
+        this.playerHandEl.style.width = `${totalWidth}px`;
+
+        const mid = (len - 1) / 2;
 
         cards.forEach((card, idx) => {
             const cardEl = document.createElement('div');
             cardEl.className = `poker-card rank-${card.rank}`;
-            if (this.selectedCards.has(card.id)) cardEl.classList.add('selected');
+            const isSelected = this.selectedCards.has(card.id);
+            if (isSelected) cardEl.classList.add('selected');
 
             cardEl.dataset.id = card.id;
             cardEl.dataset.rank = card.rank;
             cardEl.style.zIndex = idx + 1;
-
-            // 卡牌重叠间隔与扇形弧度自适应
-            const overlap = Math.min(46, Math.max(26, 680 / len));
             cardEl.style.left = `${idx * overlap}px`;
 
-            const mid = (len - 1) / 2;
-            const rot = (idx - mid) * 1.6;
-            const yArch = Math.abs(idx - mid) * 1.4;
+            // 扇形微倾斜与自然拱形
+            const rot = (idx - mid) * (isMobile ? 1.2 : 1.6);
+            const yArch = Math.abs(idx - mid) * (isMobile ? 1.0 : 1.5);
 
-            cardEl.style.transform = this.selectedCards.has(card.id) ? 
-                `translateY(-30px) rotate(${rot}deg)` : 
+            cardEl.style.transform = isSelected ? 
+                `translateY(-26px) rotate(${rot}deg)` : 
                 `translateY(${yArch}px) rotate(${rot}deg)`;
 
-            // 卡牌牌面构造
+            // 卡牌牌面设计
             if (card.isJoker) {
                 cardEl.innerHTML = `
                     <div class="card-joker-corner" style="color: ${card.color}">${card.rank === 17 ? '大<br>王' : '小<br>王'}</div>
@@ -138,29 +203,29 @@ class TableRenderer {
                 `;
             }
 
-            // 点击选中切换
-            cardEl.addEventListener('click', () => {
-                this.audio.playCardSelect();
-                if (this.selectedCards.has(card.id)) {
-                    this.selectedCards.delete(card.id);
-                    cardEl.classList.remove('selected');
-                    cardEl.style.transform = `translateY(${yArch}px) rotate(${rot}deg)`;
-                } else {
-                    this.selectedCards.add(card.id);
-                    cardEl.classList.add('selected');
-                    cardEl.style.transform = `translateY(-30px) rotate(${rot}deg)`;
-                }
+            // 点击或触控选中
+            cardEl.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleSelectCard(card, cardEl, yArch, rot);
             });
 
             this.playerHandEl.appendChild(cardEl);
         });
-
-        // 居中偏移
-        const totalWidth = (len - 1) * Math.min(42, Math.max(22, 600 / len)) + 90;
-        this.playerHandEl.style.width = `${totalWidth}px`;
     }
 
-    // 渲染左右 AI 手牌背面与数量
+    toggleSelectCard(card, cardEl, yArch, rot) {
+        this.audio.playCardSelect();
+        if (this.selectedCards.has(card.id)) {
+            this.selectedCards.delete(card.id);
+            cardEl.classList.remove('selected');
+            cardEl.style.transform = `translateY(${yArch}px) rotate(${rot}deg)`;
+        } else {
+            this.selectedCards.add(card.id);
+            cardEl.classList.add('selected');
+            cardEl.style.transform = `translateY(-26px) rotate(${rot}deg)`;
+        }
+    }
+
     renderAiHands(leftCount, rightCount) {
         if (this.aiLeftHandEl) {
             this.aiLeftHandEl.innerHTML = `
@@ -180,7 +245,6 @@ class TableRenderer {
         }
     }
 
-    // 渲染底牌
     renderBottomCards(cards, faceUp = true) {
         if (!this.bottomCardsEl) return;
         this.bottomCardsEl.innerHTML = '';
@@ -198,7 +262,6 @@ class TableRenderer {
         });
     }
 
-    // 渲染记牌器
     renderCardCounter(counts) {
         if (!this.cardCounterEl) return;
         const ranks = [
@@ -209,11 +272,11 @@ class TableRenderer {
             { r: 5, name: '5' }, { r: 4, name: '4' }, { r: 3, name: '3' }
         ];
 
-        let html = '<div class="counter-grid">';
+        let html = '<div class="counter-header"><span>👁️ 牌池记牌器</span></div><div class="counter-grid">';
         for (const item of ranks) {
             const count = counts[item.r] || 0;
             let cls = '';
-            if (count === 4) cls = 'highlight-bomb'; // 炸弹潜在点
+            if (count === 4) cls = 'highlight-bomb';
             else if (count === 0) cls = 'zero-card';
             else if (item.r >= 15) cls = 'high-card';
 
@@ -228,12 +291,10 @@ class TableRenderer {
         this.cardCounterEl.innerHTML = html;
     }
 
-    // 叫分阶段
     onBidTurnStart({ seat, highestBid }) {
         this.hideAllActionPanels();
         if (seat === 0) {
             this.bidActionsEl.classList.remove('hidden');
-            // 根据当前最高分启用/禁用叫分按钮
             document.querySelectorAll('.bid-score-btn').forEach(btn => {
                 const score = parseInt(btn.dataset.score);
                 btn.disabled = score <= highestBid;
@@ -252,7 +313,6 @@ class TableRenderer {
         this.renderBottomCards(bottomCards, true);
         this.multipliersEl.innerText = `倍数: ${baseMultiplier}x`;
 
-        // 挂载地主/农民身份徽章
         for (let s = 0; s < 3; s++) {
             const isLandlord = (s === landlordSeat);
             const parent = document.getElementById(s === 0 ? 'seat-player' : (s === 1 ? 'seat-ai-left' : 'seat-ai-right'));
@@ -264,12 +324,10 @@ class TableRenderer {
             }
         }
 
-        // 重新渲染玩家手牌和底牌
         this.renderPlayerHand(this.engine.playerHands[0]);
         this.renderAiHands(this.engine.playerHands[1].length, this.engine.playerHands[2].length);
     }
 
-    // 加倍阶段
     onDoublingStart() {
         this.hideAllActionPanels();
         if (this.doubleActionsEl) {
@@ -287,32 +345,55 @@ class TableRenderer {
         this.showSpeechBubble(seat, text);
     }
 
-    // 正式打牌
     onPlayingStart() {
         this.hideAllActionPanels();
+        this.clearAllPlayZones();
     }
 
     onPlayTurnStart({ seat, isLead, lastHand }) {
         this.hideAllActionPanels();
+
+        // 如果是新一轮主动领出（上家两家均不出），清空各家桌面上一轮的出牌残影
+        if (isLead) {
+            this.clearAllPlayZones();
+        }
+
         if (seat === 0) {
             this.playerActionsEl.classList.remove('hidden');
             const passBtn = document.getElementById('action-pass-btn');
             if (passBtn) passBtn.disabled = isLead;
 
-            // 预设提示候选
             this.currentHints = RuleEngine.findPlayableCombinations(this.engine.playerHands[0], isLead ? null : lastHand);
             this.hintIndex = 0;
         }
     }
 
+    /**
+     * 关键修复：三方独立渲染所出的牌，各家保留自己的出牌内容！
+     */
     onPlayAction({ seat, hand, remainingCount, totalMultipliers }) {
         this.audio.playCardPlay();
         this.multipliersEl.innerText = `倍数: ${totalMultipliers}x`;
 
-        // 在出牌区渲染刚出的牌
-        this.renderTablePlay(seat, hand.cards);
+        // 在该座位的专属出牌区渲染牌面
+        this.renderSeatPlay(seat, hand.cards);
 
-        // 如果是自己出的牌，刷新手牌
+        // 记入全量历史记录
+        const seatName = seat === 0 ? '我' : (seat === 1 ? '下家电脑' : '上家电脑');
+        this.matchPlayHistory.push({
+            seat,
+            seatName,
+            isPass: false,
+            cards: [...hand.cards],
+            handType: hand.type,
+            handRank: hand.rank,
+            time: new Date().toLocaleTimeString()
+        });
+
+        // 记录已打出的卡牌 ID
+        hand.cards.forEach(c => this.playedCardsSet.add(c.id));
+
+        // 刷新手牌
         if (seat === 0) {
             this.selectedCards.clear();
             this.renderPlayerHand(this.engine.playerHands[0]);
@@ -320,7 +401,6 @@ class TableRenderer {
             this.renderAiHands(this.engine.playerHands[1].length, this.engine.playerHands[2].length);
         }
 
-        // 飞机特效
         if (hand.type === 'AIRPLANE' || hand.type === 'AIRPLANE_SINGLES' || hand.type === 'AIRPLANE_PAIRS') {
             this.audio.playAirplane();
             this.effects.triggerAirplane();
@@ -330,6 +410,21 @@ class TableRenderer {
     onPassAction({ seat }) {
         this.audio.playPass();
         this.showSpeechBubble(seat, '不要 / 过');
+
+        // 在该座位的专属出牌区显示不出徽章
+        const zone = this.playZones[seat];
+        if (zone) {
+            zone.innerHTML = `<div class="table-pass-tag">不出</div>`;
+        }
+
+        const seatName = seat === 0 ? '我' : (seat === 1 ? '下家电脑' : '上家电脑');
+        this.matchPlayHistory.push({
+            seat,
+            seatName,
+            isPass: true,
+            cards: [],
+            time: new Date().toLocaleTimeString()
+        });
     }
 
     onBombTriggered({ seat, bombType }) {
@@ -342,22 +437,40 @@ class TableRenderer {
         }
     }
 
-    renderTablePlay(seat, cards) {
-        if (!this.tableCenterEl) return;
-        this.tableCenterEl.innerHTML = '';
+    /**
+     * 在专属座位出牌区渲染牌组
+     */
+    renderSeatPlay(seat, cards) {
+        const zone = this.playZones[seat];
+        if (!zone) return;
+        zone.innerHTML = '';
 
         const playContainer = document.createElement('div');
-        playContainer.className = `played-cards-group seat-${seat}`;
+        playContainer.className = `played-cards-fan seat-zone-${seat}`;
+        
+        const isMobile = window.innerWidth <= 768;
+        const overlap = isMobile ? 18 : 26;
+
         cards.forEach((card, idx) => {
             const cardEl = document.createElement('div');
             cardEl.className = 'played-poker-card';
-            cardEl.style.left = `${idx * 25}px`;
+            cardEl.style.left = `${idx * overlap}px`;
+            cardEl.style.zIndex = idx + 1;
             cardEl.style.color = card.color;
-            cardEl.innerText = card.toString();
+
+            if (card.isJoker) {
+                cardEl.innerText = card.rank === 17 ? '大王' : '小王';
+            } else {
+                cardEl.innerHTML = `<span class="played-rank">${card.name}</span><span class="played-suit">${card.suit}</span>`;
+            }
             playContainer.appendChild(cardEl);
         });
 
-        this.tableCenterEl.appendChild(playContainer);
+        // 容器自适应总宽
+        const totalW = (cards.length - 1) * overlap + (isMobile ? 46 : 64);
+        playContainer.style.width = `${totalW}px`;
+
+        zone.appendChild(playContainer);
     }
 
     showSpeechBubble(seat, text) {
@@ -378,24 +491,22 @@ class TableRenderer {
     // 智能提示循环
     triggerHint() {
         if (!this.currentHints || this.currentHints.length === 0) {
-            alert('没有能压过上家的牌型！');
+            alert('没有能压过上家的合法牌型！');
             return;
         }
 
         const candidate = this.currentHints[this.hintIndex % this.currentHints.length];
         this.hintIndex += 1;
 
-        // 选中这几张牌
         this.selectedCards.clear();
         candidate.forEach(c => this.selectedCards.add(c.id));
         this.renderPlayerHand(this.engine.playerHands[0]);
     }
 
-    // 玩家点击出牌按钮
     triggerPlaySelected() {
         const cardsToPlay = this.engine.playerHands[0].filter(c => this.selectedCards.has(c.id));
         if (cardsToPlay.length === 0) {
-            alert('请先选择要出的牌！');
+            alert('请先点击扑克牌选择要出的手牌！');
             return;
         }
         this.engine.executePlay(0, cardsToPlay);
@@ -426,10 +537,10 @@ class TableRenderer {
         const isWin = summary.isPlayerWinner;
 
         document.getElementById('modal-title-text').innerText = isWin ? '🎉 对局大胜 🎉' : '🥀 遗憾惜败 🥀';
-        document.getElementById('modal-title-text').style.color = isWin ? '#48bb78' : '#e53e3e';
+        document.getElementById('modal-title-text').style.color = isWin ? '#4ade80' : '#ef4444';
 
         document.getElementById('modal-coins-delta').innerText = `${summary.finalCoinsDelta >= 0 ? '+' : ''}${summary.finalCoinsDelta.toLocaleString()} 金币`;
-        document.getElementById('modal-coins-delta').style.color = summary.finalCoinsDelta >= 0 ? '#ecc94b' : '#a0aec0';
+        document.getElementById('modal-coins-delta').style.color = summary.finalCoinsDelta >= 0 ? '#fde047' : '#94a3b8';
 
         document.getElementById('modal-multipliers-detail').innerText = `总倍数: ${summary.totalMultiplier}x (炸弹: ${summary.bombCount}次${summary.isSpring ? ' · 春天翻倍' : ''})`;
 
@@ -439,6 +550,79 @@ class TableRenderer {
         document.getElementById('modal-rank-change-text').innerText = rankMsg;
 
         this.gameOverModal.classList.remove('hidden');
+    }
+
+    /**
+     * 关键功能：打开全量出牌历史与牌池追踪弹窗
+     */
+    openHistoryModal() {
+        if (!this.historyModal) return;
+
+        // 渲染流水
+        if (this.historyTimelineList) {
+            if (this.matchPlayHistory.length === 0) {
+                this.historyTimelineList.innerHTML = '<div class="history-empty-tip">本局尚未开始出牌</div>';
+            } else {
+                let html = '';
+                this.matchPlayHistory.forEach((item, index) => {
+                    if (item.isPass) {
+                        html += `
+                            <div class="history-item-row pass-row">
+                                <span class="history-turn-index">#${index + 1}</span>
+                                <span class="history-seat-tag">${item.seatName}</span>
+                                <span class="history-pass-text">不出 / 过</span>
+                            </div>
+                        `;
+                    } else {
+                        const cardsStr = item.cards.map(c => `<span class="hist-card" style="color:${c.color}">${c.toString()}</span>`).join(' ');
+                        html += `
+                            <div class="history-item-row play-row">
+                                <span class="history-turn-index">#${index + 1}</span>
+                                <span class="history-seat-tag">${item.seatName}</span>
+                                <span class="history-cards-str">${cardsStr}</span>
+                            </div>
+                        `;
+                    }
+                });
+                this.historyTimelineList.innerHTML = html;
+            }
+        }
+
+        this.historyModal.classList.remove('hidden');
+    }
+
+    /**
+     * 渲染 54 张扑克牌池已出 vs 未出矩阵
+     */
+    renderCardsDistributionMatrix() {
+        if (!this.historyCardsGrid) return;
+
+        const ranks = [
+            { r: 17, name: '大王' }, { r: 16, name: '小王' }, { r: 15, name: '2' },
+            { r: 14, name: 'A' }, { r: 13, name: 'K' }, { r: 12, name: 'Q' },
+            { r: 11, name: 'J' }, { r: 10, name: '10' }, { r: 9, name: '9' },
+            { r: 8, name: '8' }, { r: 7, name: '7' }, { r: 6, name: '6' },
+            { r: 5, name: '5' }, { r: 4, name: '4' }, { r: 3, name: '3' }
+        ];
+
+        let html = '<div class="matrix-grid-box">';
+        ranks.forEach(item => {
+            const remaining = this.engine.remainingCardCounts.get(item.r) || 0;
+            const maxCount = (item.r >= 16) ? 1 : 4;
+            const usedCount = maxCount - remaining;
+
+            html += `
+                <div class="matrix-card-stat ${remaining === 0 ? 'all-played' : ''}">
+                    <div class="matrix-rank-title">${item.name}</div>
+                    <div class="matrix-count-info">
+                        <span class="used-text">已出: ${usedCount}</span>
+                        <span class="remain-text">剩余: ${remaining}</span>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        this.historyCardsGrid.innerHTML = html;
     }
 }
 

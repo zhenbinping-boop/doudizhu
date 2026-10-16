@@ -3,14 +3,23 @@
  * 负责主大厅展示、个人信息、角色养成面板、天赋树加点、每日任务/签到、转盘与商城交互
  */
 
+const CHARACTER_QUOTES = {
+    'c1': '牌友你好！咱庄稼人打牌靠实力，配合默契才能百战百胜！',
+    'c2': '手握重金，谁敢不服？本财神出手，叫三分超级加倍！',
+    'c3': '千算万算，尽在吾彀中。牌池五十有四，已悉数推演无遗！',
+    'c4': '小女子今天手气正旺呢~ 官人可敢与我再大战三百回合？'
+};
+
 class LobbyRenderer {
     constructor(systems, onStartMatch, onStartPuzzle) {
         this.systems = systems;
         this.onStartMatch = onStartMatch;
         this.onStartPuzzle = onStartPuzzle;
+        this.marqueeInterval = null;
 
         this.initDom();
         this.updateHeaderHUD();
+        this.startMarquee();
     }
 
     initDom() {
@@ -25,6 +34,20 @@ class LobbyRenderer {
         this.coinsValEl = document.getElementById('lobby-coins-val');
         this.diamondsValEl = document.getElementById('lobby-diamonds-val');
         this.energyValEl = document.getElementById('lobby-energy-val');
+
+        // 主角立绘与快速开始推荐
+        this.heroAvatarEl = document.getElementById('lobby-hero-avatar');
+        this.heroQuoteEl = document.getElementById('lobby-hero-quote');
+        this.recommendedVenueEl = document.getElementById('qp-recommended-venue');
+        this.quickStartBtn = document.getElementById('btn-quick-start');
+        this.marqueeTextEl = document.getElementById('marquee-text');
+
+        if (this.quickStartBtn) {
+            this.quickStartBtn.addEventListener('click', () => {
+                const best = this.getRecommendedVenue();
+                this.onStartMatch(best.key, 'CLASSIC');
+            });
+        }
 
         // 救济金按钮
         this.reliefBtn = document.getElementById('btn-claim-relief');
@@ -57,6 +80,39 @@ class LobbyRenderer {
         this.bindModalButtons();
     }
 
+    getRecommendedVenue() {
+        const coins = this.systems.storage.data.currencies.coins;
+        if (coins >= 100000) return { key: 'legend', name: '推荐：至尊巅峰场' };
+        if (coins >= 15000) return { key: 'master', name: '推荐：大师荣耀场' };
+        if (coins >= 3000) return { key: 'expert', name: '推荐：进阶高手场' };
+        return { key: 'novice', name: '推荐：新手初级场' };
+    }
+
+    startMarquee() {
+        const messages = [
+            '📢 热烈欢迎来到《斗地主宗师》！当前全服高手云集，排位赛季激战正酣！',
+            '🎉 恭喜玩家【牌皇绝影】在至尊巅峰场赢得 2,480,000 金币！',
+            '⚡ 不洗牌狂欢场全面开放！连环炸弹、火箭满天飞，刺激翻倍！',
+            '🌾 每日任务与七日签到好礼刷新，领金币、钻石与保星卡！',
+            '🌲 天赋科技六维树已开启！加点强化金币收益与炸弹免伤！',
+            '🧩 经典六大残局闯关上线！烧脑解密，破局赢取海量钻石！'
+        ];
+        let msgIndex = 0;
+        if (this.marqueeInterval) clearInterval(this.marqueeInterval);
+        this.marqueeInterval = setInterval(() => {
+            if (this.marqueeTextEl) {
+                this.marqueeTextEl.style.opacity = '0';
+                this.marqueeTextEl.style.transform = 'translateY(8px)';
+                setTimeout(() => {
+                    msgIndex = (msgIndex + 1) % messages.length;
+                    this.marqueeTextEl.innerText = messages[msgIndex];
+                    this.marqueeTextEl.style.opacity = '1';
+                    this.marqueeTextEl.style.transform = 'translateY(0)';
+                }, 300);
+            }
+        }, 5000);
+    }
+
     updateHeaderHUD() {
         const data = this.systems.storage.data;
         const rankInfo = this.systems.rank.getCurrentRankInfo();
@@ -73,6 +129,17 @@ class LobbyRenderer {
         if (this.coinsValEl) this.coinsValEl.innerText = data.currencies.coins.toLocaleString();
         if (this.diamondsValEl) this.diamondsValEl.innerText = data.currencies.diamonds.toLocaleString();
         if (this.energyValEl) this.energyValEl.innerText = `${data.currencies.energy}/${data.currencies.maxEnergy}`;
+
+        // 动态刷新英雄展示与台词
+        if (this.heroAvatarEl) this.heroAvatarEl.innerText = activeChar.icon;
+        if (this.heroQuoteEl) {
+            const quote = CHARACTER_QUOTES[activeChar.id] || '牌友你好！今天手气正旺，点击【快速开始】来一局巅峰对决吧！';
+            this.heroQuoteEl.innerText = `"${quote}"`;
+        }
+        if (this.recommendedVenueEl) {
+            const rec = this.getRecommendedVenue();
+            this.recommendedVenueEl.innerText = rec.name;
+        }
 
         // 检查救济金是否可领
         if (this.reliefBtn) {
