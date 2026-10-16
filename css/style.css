@@ -55,7 +55,7 @@ body {
 }
 
 /* ===================================================
-   0. 开场动画与欢迎画面 (SPLASH SCREEN)
+   0. 开场动画与欢迎画面 (SPLASH SCREEN) - 彻底消灭乱闪与抽搐
    =================================================== */
 #splash-screen {
     position: fixed;
@@ -69,98 +69,185 @@ body {
     align-items: center;
     justify-content: center;
     z-index: 8000;
-    transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s ease;
+    transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 #splash-screen.fade-out {
     opacity: 0;
-    transform: scale(1.12);
+    transform: scale(1.08) translate3d(0, 0, 0);
     pointer-events: none;
 }
 
+/* 背景光晕：采用纯径向渐变自然羽化，杜绝高斯模糊滤镜重绘导致的显存抖动闪烁 */
 .splash-bg-glow {
     position: absolute;
-    width: 650px;
-    height: 650px;
-    background: radial-gradient(circle, rgba(245, 158, 11, 0.18) 0%, rgba(239, 68, 68, 0.09) 50%, transparent 70%);
+    width: min(92vw, 680px);
+    height: min(92vw, 680px);
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.18) 0%, rgba(239, 68, 68, 0.08) 45%, transparent 70%);
     border-radius: 50%;
-    filter: blur(50px);
-    animation: pulseGlow 7s infinite alternate ease-in-out;
+    pointer-events: none;
+    animation: glowBreathe 6.5s infinite alternate ease-in-out;
+    will-change: opacity;
+    transform: translate3d(0, 0, 0);
 }
 
-@keyframes pulseGlow {
-    0% { transform: scale(0.88); opacity: 0.5; }
-    100% { transform: scale(1.18); opacity: 0.95; }
+@keyframes glowBreathe {
+    0% { opacity: 0.45; }
+    100% { opacity: 0.95; }
 }
 
-/* 3D 扇形扑克开场动画（缓慢、从容、优雅展开与悬浮） */
+/* 3D 扇形扑克开场舞台：舞台负责统一 3D 倾角与悬浮，绝不与内部卡牌的旋转冲突 */
 .splash-cards-stage {
     position: relative;
-    width: 280px;
-    height: 160px;
-    perspective: 1000px;
+    width: 320px;
+    height: 180px;
+    perspective: 1200px;
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
     margin-bottom: 24px;
+    animation: stageHover 6.5s ease-in-out infinite alternate;
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
 }
 
+@keyframes stageHover {
+    0%   { transform: translateY(0px) rotateX(10deg); }
+    100% { transform: translateY(-12px) rotateX(16deg); }
+}
+
+/* 单张卡牌基础：移除 transition: all，启用硬件加速合成层与独立景深 */
 .splash-card {
     position: absolute;
     bottom: 0;
     left: 50%;
-    width: 80px;
-    height: 116px;
+    width: 84px;
+    height: 122px;
     background: #ffffff;
     border-radius: 8px;
-    border: 2px solid #cbd5e1;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    border: 1.5px solid #cbd5e1;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
     display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 26px;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 6px;
     font-weight: 900;
     transform-origin: bottom center;
-    transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-    animation: cardFloat 6.5s infinite ease-in-out;
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
 }
 
-.splash-card.sc-1 {
-    transform: translateX(-50%) rotate(-30deg) translate(-50px, 15px);
+/* 牌面精致角标与中心大花色 */
+.splash-card .sc-corner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.05;
+    font-size: 15px;
+    font-weight: 900;
+    width: 16px;
+}
+.splash-card .sc-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 32px;
+    pointer-events: none;
+    opacity: 0.95;
+}
+
+.splash-card.sc-1, .splash-card.sc-4 {
     color: #1e293b;
-    animation-delay: 0.25s;
+}
+.splash-card.sc-2, .splash-card.sc-5 {
+    color: #ef4444;
+}
+
+/* 中心王牌 (🃏 / 大王) 豪华金箔与王冠 */
+.splash-card.sc-3 {
+    background: linear-gradient(145deg, #fffbeb 0%, #ffffff 60%, #fef3c7 100%);
+    border: 2px solid #f59e0b;
+    box-shadow: 0 0 28px rgba(245, 158, 11, 0.65), 0 12px 28px rgba(0, 0, 0, 0.55);
+    color: #b45309;
+    align-items: center;
+    text-align: center;
+}
+.splash-card.sc-3 .sc-joker-top {
+    font-size: 10px;
+    letter-spacing: 2px;
+    font-weight: 900;
+    color: #d97706;
+    margin-top: 2px;
+}
+.splash-card.sc-3 .sc-center.joker-crown {
+    font-size: 38px;
+    filter: drop-shadow(0 2px 6px rgba(245, 158, 11, 0.4));
+}
+.splash-card.sc-3 .sc-joker-bottom {
+    font-size: 11px;
+    font-weight: 900;
+    color: #b45309;
+    letter-spacing: 2px;
+    margin-bottom: 2px;
+}
+
+/* 彻底解决 Z-Fighting：每张牌拥有固定的独立 Z 深度平层（4px/12px/24px/12px/4px）与专属浮动动画，杜绝图层打架闪烁 */
+.splash-card.sc-1 {
+    z-index: 1;
+    animation: floatSc1 6.2s ease-in-out infinite alternate;
 }
 .splash-card.sc-2 {
-    transform: translateX(-50%) rotate(-15deg) translate(-25px, 5px);
-    color: #ef4444;
-    animation-delay: 0.5s;
+    z-index: 2;
+    animation: floatSc2 6.6s ease-in-out infinite alternate;
 }
 .splash-card.sc-3 {
-    transform: translateX(-50%) rotate(0deg) translate(0, -10px);
-    color: #f59e0b;
-    border-color: #f59e0b;
-    box-shadow: 0 0 24px rgba(245, 158, 11, 0.6);
-    animation-delay: 0.75s;
-    font-size: 36px;
+    z-index: 5;
+    animation: floatSc3 7.0s ease-in-out infinite alternate;
 }
 .splash-card.sc-4 {
-    transform: translateX(-50%) rotate(15deg) translate(25px, 5px);
-    color: #1e293b;
-    animation-delay: 1.0s;
+    z-index: 2;
+    animation: floatSc4 6.5s ease-in-out infinite alternate;
 }
 .splash-card.sc-5 {
-    transform: translateX(-50%) rotate(30deg) translate(50px, 15px);
-    color: #ef4444;
-    animation-delay: 1.25s;
+    z-index: 1;
+    animation: floatSc5 6.3s ease-in-out infinite alternate;
 }
 
-@keyframes cardFloat {
-    0%, 100% { transform: translateX(-50%) translateY(0); }
-    50% { transform: translateX(-50%) translateY(-14px); }
+@keyframes floatSc1 {
+    0%   { transform: translate3d(-50%, 0, 4px) rotate(-26deg) translate(-65px, 12px); }
+    100% { transform: translate3d(-50%, 0, 4px) rotate(-26deg) translate(-65px, 3px); }
+}
+@keyframes floatSc2 {
+    0%   { transform: translate3d(-50%, 0, 12px) rotate(-13deg) translate(-32px, 4px); }
+    100% { transform: translate3d(-50%, 0, 12px) rotate(-13deg) translate(-32px, -6px); }
+}
+@keyframes floatSc3 {
+    0%   { transform: translate3d(-50%, 0, 24px) rotate(0deg) translate(0px, -12px); box-shadow: 0 0 24px rgba(245, 158, 11, 0.55), 0 10px 25px rgba(0, 0, 0, 0.5); }
+    100% { transform: translate3d(-50%, 0, 24px) rotate(0deg) translate(0px, -24px); box-shadow: 0 0 36px rgba(245, 158, 11, 0.85), 0 16px 32px rgba(0, 0, 0, 0.6); }
+}
+@keyframes floatSc4 {
+    0%   { transform: translate3d(-50%, 0, 12px) rotate(13deg) translate(32px, 4px); }
+    100% { transform: translate3d(-50%, 0, 12px) rotate(13deg) translate(32px, -6px); }
+}
+@keyframes floatSc5 {
+    0%   { transform: translate3d(-50%, 0, 4px) rotate(26deg) translate(65px, 12px); }
+    100% { transform: translate3d(-50%, 0, 4px) rotate(26deg) translate(65px, 3px); }
 }
 
+/* 标题区域：阴影移至父容器，避免 -webkit-background-clip: text 字符重绘瞬闪 */
 .splash-logo-box {
     text-align: center;
-    margin-bottom: 36px;
+    margin-bottom: 34px;
     z-index: 10;
+    filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.8));
+    transform: translate3d(0, 0, 0);
 }
 
 .splash-subtitle {
@@ -168,17 +255,16 @@ body {
     letter-spacing: 4px;
     color: var(--gold-light);
     margin-bottom: 6px;
-    text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+    text-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
 }
 
 .splash-title {
     font-size: 46px;
     font-weight: 900;
     letter-spacing: 6px;
-    background: linear-gradient(135deg, #fff 0%, #fef08a 40%, #f59e0b 80%, #d97706 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #fef08a 40%, #f59e0b 80%, #d97706 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.8));
     margin-bottom: 4px;
 }
 
@@ -189,6 +275,7 @@ body {
     font-weight: 700;
 }
 
+/* 开始按钮：使用 GPU translateX 替代 left 避免触发页面 Reflow 重新排版 */
 .btn-splash-start {
     position: relative;
     padding: 16px 48px;
@@ -199,43 +286,72 @@ body {
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #991b1b 100%);
     border: 2px solid #fecaca;
     border-radius: 40px;
-    box-shadow: 0 10px 30px rgba(239, 68, 68, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+    box-shadow: 0 10px 30px rgba(239, 68, 68, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.4);
     cursor: pointer;
     overflow: hidden;
-    transition: all 0.35s ease;
-    animation: btnPulse 4.5s infinite ease-in-out;
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    transform: translate3d(0, 0, 0);
+    animation: btnGentlePulse 4.5s infinite ease-in-out;
+    will-change: transform, box-shadow;
 }
 
 .btn-splash-start:hover {
-    transform: scale(1.05);
+    transform: scale(1.05) translate3d(0, 0, 0);
     box-shadow: 0 14px 40px rgba(239, 68, 68, 0.7);
+}
+
+.btn-splash-start:active {
+    transform: scale(0.97) translate3d(0, 0, 0);
 }
 
 .btn-splash-start .btn-shine {
     position: absolute;
     top: 0;
-    left: -100%;
-    width: 60%;
+    left: 0;
+    width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-    transform: skewX(-25deg);
-    animation: shineSweep 5s infinite ease-in-out;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
+    transform: translateX(-160%) skewX(-25deg);
+    animation: shineSweepGpu 5.5s infinite ease-in-out;
+    pointer-events: none;
+    will-change: transform;
 }
 
-@keyframes shineSweep {
-    0% { left: -100%; }
-    40%, 100% { left: 180%; }
+@keyframes shineSweepGpu {
+    0% { transform: translateX(-160%) skewX(-25deg); }
+    30%, 100% { transform: translateX(160%) skewX(-25deg); }
 }
 
-@keyframes btnPulse {
-    0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.45); transform: scale(1); }
-    50% { box-shadow: 0 0 35px rgba(239, 68, 68, 0.85); transform: scale(1.02); }
+@keyframes btnGentlePulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); transform: scale(1) translate3d(0, 0, 0); }
+    50% { box-shadow: 0 0 35px rgba(239, 68, 68, 0.75); transform: scale(1.025) translate3d(0, 0, 0); }
 }
 
 .splash-version {
     margin-top: 30px;
     font-size: 12px;
     color: #64748b;
+}
+
+@media (max-width: 600px) {
+    .splash-cards-stage {
+        width: 270px;
+        height: 155px;
+        transform: scale(0.88);
+        margin-bottom: 16px;
+    }
+    .splash-title {
+        font-size: 36px;
+        letter-spacing: 4px;
+    }
+    .splash-subtitle {
+        font-size: 11px;
+        letter-spacing: 2px;
+    }
+    .btn-splash-start {
+        padding: 13px 38px;
+        font-size: 16px;
+    }
 }
 
 
