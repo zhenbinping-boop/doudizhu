@@ -115,6 +115,7 @@ class TableRenderer {
         this.clearTable();
         this.matchPlayHistory = [];
         this.playedCardsSet.clear();
+        this.isDealingAnimation = true;
         this.renderPlayerHand(playerHands[0]);
         this.renderAiHands(playerHands[1].length, playerHands[2].length);
         this.renderBottomCards(bottomCards, false); // 初始背面朝上
@@ -226,18 +227,53 @@ class TableRenderer {
 
             this.playerHandEl.appendChild(cardEl);
         });
+
+        // 引入 Anime.js 开局如流水分发牌动效
+        if (typeof anime !== 'undefined' && this.isDealingAnimation) {
+            this.isDealingAnimation = false;
+            anime({
+                targets: this.playerHandEl.children,
+                translateY: [60, (el, idx) => Math.abs(idx - mid) * (isMobile ? 1.0 : 1.5)],
+                opacity: [0, 1],
+                scale: [0.85, 1],
+                delay: anime.stagger(28),
+                duration: 420,
+                easing: 'easeOutQuad'
+            });
+        }
     }
 
     toggleSelectCard(card, cardEl, yArch, rot) {
-        this.audio.playCardSelect();
         if (this.selectedCards.has(card.id)) {
             this.selectedCards.delete(card.id);
             cardEl.classList.remove('selected');
-            cardEl.style.transform = `translateY(${yArch}px) rotate(${rot}deg)`;
+            this.audio.playCardUnselect();
+            if (typeof anime !== 'undefined') {
+                anime({
+                    targets: cardEl,
+                    translateY: yArch,
+                    scale: 1,
+                    duration: 260,
+                    easing: 'easeOutElastic(1, .8)'
+                });
+            } else {
+                cardEl.style.transform = `translateY(${yArch}px) rotate(${rot}deg)`;
+            }
         } else {
             this.selectedCards.add(card.id);
             cardEl.classList.add('selected');
-            cardEl.style.transform = `translateY(-26px) rotate(${rot}deg)`;
+            this.audio.playCardSelect();
+            if (typeof anime !== 'undefined') {
+                anime({
+                    targets: cardEl,
+                    translateY: -26,
+                    scale: 1.06,
+                    duration: 280,
+                    easing: 'easeOutElastic(1, .6)'
+                });
+            } else {
+                cardEl.style.transform = `translateY(-26px) rotate(${rot}deg)`;
+            }
         }
     }
 
@@ -505,6 +541,19 @@ class TableRenderer {
         playContainer.style.width = `${totalW}px`;
 
         zone.appendChild(playContainer);
+
+        // 引入 Anime.js 出牌轻盈弹出动效
+        if (typeof anime !== 'undefined') {
+            anime({
+                targets: playContainer.children,
+                scale: [0.75, 1],
+                opacity: [0, 1],
+                translateY: [-10, 0],
+                delay: anime.stagger(22),
+                duration: 300,
+                easing: 'easeOutBack'
+            });
+        }
     }
 
     showSpeechBubble(seat, text) {

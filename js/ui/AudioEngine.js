@@ -48,9 +48,14 @@ class AudioEngine {
         this.playTone(600 + Math.random() * 200, 'triangle', 0.05, 0.15);
     }
 
-    // 选中/抬起扑克
+    // 选中/抬起扑克 (清脆纸牌弹拨声)
     playCardSelect() {
-        this.playTone(450, 'sine', 0.06, 0.1);
+        this.playTone(587.33, 'triangle', 0.05, 0.12);
+    }
+
+    // 取消选中扑克 (柔和回落音)
+    playCardUnselect() {
+        this.playTone(440, 'sine', 0.04, 0.08);
     }
 
     // 出牌落地音 (清脆拍桌声)

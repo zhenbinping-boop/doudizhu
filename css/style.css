@@ -575,9 +575,33 @@ body {
     backdrop-filter: blur(12px);
 }
 
+/* Magic UI / Uiverse 灵感：流光高光扫过效果 */
+.mode-slide-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.09) 50%, transparent 100%);
+    transform: skewX(-20deg);
+    animation: cardShimmerSweep 5.5s infinite ease-in-out;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes cardShimmerSweep {
+    0% { transform: translateX(0) skewX(-20deg); }
+    35%, 100% { transform: translateX(250%) skewX(-20deg); }
+}
+
 .mode-slide-card:hover {
     transform: scale(1.02) translateY(-4px);
     box-shadow: 0 28px 60px rgba(0, 0, 0, 0.85);
+}
+
+.mode-slide-card:active {
+    transform: scale(0.985);
 }
 
 /* 核心需求：点击卡牌后，卡牌急剧放大穿梭，逐渐进入牌局 */
@@ -1403,9 +1427,9 @@ body {
 }
 
 .poker-card.selected {
-    transform: translateY(-30px) !important;
-    border: 2px solid #ef4444;
-    box-shadow: 0 14px 28px rgba(239, 68, 68, 0.6) !important;
+    transform: translateY(-28px) !important;
+    border: 2px solid #f59e0b !important;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.45), 0 0 16px rgba(245, 158, 11, 0.6) !important;
 }
 
 .card-corner {
