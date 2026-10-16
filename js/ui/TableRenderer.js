@@ -93,10 +93,11 @@ const SMALL_JOKER_SVG = `
 </svg>`;
 
 class TableRenderer {
-    constructor(gameEngine, effects, audio) {
+    constructor(gameEngine, effects, audio, systems = null) {
         this.engine = gameEngine;
         this.effects = effects;
         this.audio = audio;
+        this.systems = systems;
 
         this.selectedCards = new Set();
         this.hintIndex = 0;
@@ -108,6 +109,8 @@ class TableRenderer {
 
         this.initDom();
         this.bindEngineEvents();
+        this.initSwipeSelection();
+        this.applyCosmetics();
 
         // 监听屏幕尺寸改变，保持移动端手牌完美居中自适应
         window.addEventListener('resize', () => {
@@ -115,6 +118,45 @@ class TableRenderer {
                 this.renderPlayerHand(this.engine.playerHands[0]);
             }
         });
+    }
+
+    /**
+     * 应用玩家当前装备的装扮 (牌桌皮肤、卡牌背纹、轰鸣特效)
+     */
+    applyCosmetics() {
+        const tableContainer = document.getElementById('game-table-container');
+        if (!tableContainer) return;
+
+        const cosmetics = this.systems?.storage?.data?.cosmetics || {
+            equippedTable: 'table_green',
+            equippedBack: 'back_blue',
+            equippedEffect: 'effect_bomb_classic'
+        };
+
+        // 1. 应用牌桌桌布皮肤
+        const tableSkin = cosmetics.equippedTable || 'table_green';
+        tableContainer.className = tableContainer.className
+            .split(' ')
+            .filter(c => !c.startsWith('table-skin-'))
+            .join(' ');
+        tableContainer.classList.add(`table-skin-${tableSkin}`);
+
+        // 2. 应用扑克背纹皮肤到 AI 手牌和底牌
+        const backSkin = cosmetics.equippedBack || 'back_blue';
+        document.querySelectorAll('.ai-card-back').forEach(el => {
+            el.className = el.className.split(' ').filter(c => !c.startsWith('card-skin-')).join(' ');
+            el.classList.add(`card-skin-${backSkin}`);
+        });
+
+        document.querySelectorAll('.bottom-card-item.face-down').forEach(el => {
+            el.className = el.className.split(' ').filter(c => !c.startsWith('card-skin-')).join(' ');
+            el.classList.add(`card-skin-${backSkin}`);
+        });
+
+        // 3. 应用出牌炸弹特效
+        if (this.effects) {
+            this.effects.equippedEffect = cosmetics.equippedEffect || 'effect_bomb_classic';
+        }
     }
 
     initDom() {
@@ -194,7 +236,7 @@ class TableRenderer {
         this.engine.on('game_over', data => this.onGameOver(data));
         this.engine.on('card_counter_updated', data => this.renderCardCounter(data.counts));
         this.engine.on('play_error', data => {
-            if (data.seat === 0) alert(data.message);
+            if (data.seat === 0) window.showGameToast(data.message, 'warning');
         });
     }
 
@@ -205,6 +247,7 @@ class TableRenderer {
         this.matchPlayHistory = [];
         this.playedCardsSet.clear();
         this.isDealingAnimation = true;
+        this.applyCosmetics();
         this.renderPlayerHand(playerHands[0]);
         this.renderAiHands(playerHands[1].length, playerHands[2].length);
         this.renderBottomCards(bottomCards, false); // 初始背面朝上
@@ -275,14 +318,17 @@ class TableRenderer {
             const isSelected = this.selectedCards.has(card.id);
             if (isSelected) cardEl.classList.add('selected');
 
-            cardEl.dataset.id = card.id;
-            cardEl.dataset.rank = card.rank;
-            cardEl.style.zIndex = idx + 1;
-            cardEl.style.left = `${idx * overlap}px`;
-
             // 扇形微倾斜与自然拱形
             const rot = (idx - mid) * (isMobile ? 1.2 : 1.6);
             const yArch = Math.abs(idx - mid) * (isMobile ? 1.0 : 1.5);
+
+            cardEl.dataset.id = card.id;
+            cardEl.dataset.rank = card.rank;
+            cardEl.dataset.yarch = yArch;
+            cardEl.dataset.rot = rot;
+            cardEl.style.zIndex = idx + 1;
+            cardEl.style.left = `${idx * overlap}px`;
+            cardEl.style.touchAction = 'none';
 
             cardEl.style.transform = isSelected ? 
                 `translateY(-26px) rotate(${rot}deg)` : 
@@ -321,12 +367,6 @@ class TableRenderer {
                 `;
             }
 
-            // 点击或触控选中
-            cardEl.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.toggleSelectCard(card, cardEl, yArch, rot);
-            });
-
             this.playerHandEl.appendChild(cardEl);
         });
 
@@ -345,45 +385,149 @@ class TableRenderer {
         }
     }
 
-    toggleSelectCard(card, cardEl, yArch, rot) {
-        if (this.selectedCards.has(card.id)) {
-            this.selectedCards.delete(card.id);
-            cardEl.classList.remove('selected');
-            this.audio.playCardUnselect();
-            if (typeof anime !== 'undefined') {
-                anime({
-                    targets: cardEl,
-                    translateY: yArch,
-                    scale: 1,
-                    duration: 260,
-                    easing: 'easeOutElastic(1, .8)'
-                });
-            } else {
-                cardEl.style.transform = `translateY(${yArch}px) rotate(${rot}deg)`;
+    /**
+     * 滑动划屏选牌与鼠标拖拽批量选牌手势引擎
+     */
+    initSwipeSelection() {
+        if (!this.playerHandEl || this.playerHandEl._swipeBound) return;
+        this.playerHandEl._swipeBound = true;
+        this.playerHandEl.style.touchAction = 'none';
+
+        this.isSwiping = false;
+        this.swipeAction = 'select';
+        this.swipedCardsThisGesture = new Set();
+        this.lastSwipeSoundTime = 0;
+
+        const onStart = (clientX, clientY) => {
+            const cardEl = document.elementFromPoint(clientX, clientY)?.closest('.poker-card');
+            if (!cardEl || !cardEl.dataset.id) return;
+
+            this.isSwiping = true;
+            this.swipedCardsThisGesture.clear();
+
+            const cardId = cardEl.dataset.id;
+            this.swipedCardsThisGesture.add(cardId);
+
+            // 如果起点卡牌已被选中，则本次滑动势头为反选/取消选中，否则为选中
+            const isCurrentlySelected = this.selectedCards.has(cardId);
+            this.swipeAction = isCurrentlySelected ? 'unselect' : 'select';
+
+            this.applyCardSelection(cardId, cardEl, this.swipeAction);
+        };
+
+        const onMove = (clientX, clientY) => {
+            if (!this.isSwiping) return;
+
+            const cardEl = document.elementFromPoint(clientX, clientY)?.closest('.poker-card');
+            if (cardEl && cardEl.dataset.id) {
+                const cardId = cardEl.dataset.id;
+                if (!this.swipedCardsThisGesture.has(cardId)) {
+                    this.swipedCardsThisGesture.add(cardId);
+                    this.applyCardSelection(cardId, cardEl, this.swipeAction);
+                }
+            }
+        };
+
+        const onEnd = () => {
+            if (!this.isSwiping) return;
+            this.isSwiping = false;
+            this.swipedCardsThisGesture.clear();
+        };
+
+        // 鼠标按下与滑动
+        this.playerHandEl.addEventListener('mousedown', (e) => {
+            if (e.button !== 0) return;
+            onStart(e.clientX, e.clientY);
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (this.isSwiping) {
+                onMove(e.clientX, e.clientY);
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (this.isSwiping) onEnd();
+        });
+
+        // 触控设备手指划屏选牌
+        this.playerHandEl.addEventListener('touchstart', (e) => {
+            if (e.touches && e.touches.length > 0) {
+                onStart(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchmove', (e) => {
+            if (this.isSwiping && e.touches && e.touches.length > 0) {
+                onMove(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchend', () => {
+            if (this.isSwiping) onEnd();
+        });
+
+        window.addEventListener('touchcancel', () => {
+            if (this.isSwiping) onEnd();
+        });
+    }
+
+    applyCardSelection(cardId, cardEl, action) {
+        const yArch = parseFloat(cardEl.dataset.yarch) || 0;
+        const rot = parseFloat(cardEl.dataset.rot) || 0;
+
+        const now = Date.now();
+        const shouldPlayAudio = now - this.lastSwipeSoundTime > 60;
+
+        if (action === 'select') {
+            if (!this.selectedCards.has(cardId)) {
+                this.selectedCards.add(cardId);
+                cardEl.classList.add('selected');
+                if (shouldPlayAudio) {
+                    this.audio.playCardSelect();
+                    this.lastSwipeSoundTime = now;
+                }
+                if (typeof anime !== 'undefined') {
+                    anime({
+                        targets: cardEl,
+                        translateY: -26,
+                        scale: 1.05,
+                        duration: 240,
+                        easing: 'easeOutElastic(1, .7)'
+                    });
+                } else {
+                    cardEl.style.transform = `translateY(-26px) rotate(${rot}deg)`;
+                }
             }
         } else {
-            this.selectedCards.add(card.id);
-            cardEl.classList.add('selected');
-            this.audio.playCardSelect();
-            if (typeof anime !== 'undefined') {
-                anime({
-                    targets: cardEl,
-                    translateY: -26,
-                    scale: 1.06,
-                    duration: 280,
-                    easing: 'easeOutElastic(1, .6)'
-                });
-            } else {
-                cardEl.style.transform = `translateY(-26px) rotate(${rot}deg)`;
+            if (this.selectedCards.has(cardId)) {
+                this.selectedCards.delete(cardId);
+                cardEl.classList.remove('selected');
+                if (shouldPlayAudio) {
+                    this.audio.playCardUnselect();
+                    this.lastSwipeSoundTime = now;
+                }
+                if (typeof anime !== 'undefined') {
+                    anime({
+                        targets: cardEl,
+                        translateY: yArch,
+                        scale: 1,
+                        duration: 220,
+                        easing: 'easeOutElastic(1, .8)'
+                    });
+                } else {
+                    cardEl.style.transform = `translateY(${yArch}px) rotate(${rot}deg)`;
+                }
             }
         }
     }
 
     renderAiHands(leftCount, rightCount) {
+        const backSkin = this.systems?.storage?.data?.cosmetics?.equippedBack || 'back_blue';
         if (this.aiLeftHandEl) {
             this.aiLeftHandEl.innerHTML = `
                 <div class="ai-card-fan">
-                    <div class="ai-card-back"></div>
+                    <div class="ai-card-back card-skin-${backSkin}"></div>
                     <span class="ai-count-badge">${leftCount}</span>
                 </div>
             `;
@@ -391,7 +535,7 @@ class TableRenderer {
         if (this.aiRightHandEl) {
             this.aiRightHandEl.innerHTML = `
                 <div class="ai-card-fan">
-                    <div class="ai-card-back"></div>
+                    <div class="ai-card-back card-skin-${backSkin}"></div>
                     <span class="ai-count-badge">${rightCount}</span>
                 </div>
             `;
@@ -401,6 +545,7 @@ class TableRenderer {
     renderBottomCards(cards, faceUp = true) {
         if (!this.bottomCardsEl) return;
         this.bottomCardsEl.innerHTML = '';
+        const backSkin = this.systems?.storage?.data?.cosmetics?.equippedBack || 'back_blue';
         cards.forEach(card => {
             const el = document.createElement('div');
             el.className = 'bottom-card-item';
@@ -408,7 +553,7 @@ class TableRenderer {
                 el.style.color = card.color;
                 el.innerText = card.toString();
             } else {
-                el.className += ' face-down';
+                el.className += ` face-down card-skin-${backSkin}`;
                 el.innerText = '🂠';
             }
             this.bottomCardsEl.appendChild(el);
@@ -684,7 +829,7 @@ class TableRenderer {
     // 智能提示循环
     triggerHint() {
         if (!this.currentHints || this.currentHints.length === 0) {
-            alert('没有能压过上家的合法牌型！');
+            window.showGameToast('没有能压过上家的合法牌型！', 'info');
             return;
         }
 
@@ -699,7 +844,7 @@ class TableRenderer {
     triggerPlaySelected() {
         const cardsToPlay = this.engine.playerHands[0].filter(c => this.selectedCards.has(c.id));
         if (cardsToPlay.length === 0) {
-            alert('请先点击扑克牌选择要出的手牌！');
+            window.showGameToast('请先选择要出的手牌！', 'info');
             return;
         }
         this.engine.executePlay(0, cardsToPlay);

@@ -109,60 +109,164 @@ class EffectsRenderer {
         }, 16);
     }
 
-    // 炸弹特效
+    // 炸弹特效 (依据装备的商城特效动态渲染)
     triggerBomb(x, y) {
-        this.shakeScreen(15, 500);
+        const effect = this.equippedEffect || 'effect_bomb_classic';
+        const cx = x || window.innerWidth / 2;
+        const cy = y || window.innerHeight / 2;
 
-        // 产生火花与烟尘粒子
-        const colors = ['#f56565', '#ed8936', '#ecc94b', '#ffffff'];
-        for (let i = 0; i < 60; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const speed = Math.random() * 12 + 4;
-            this.particles.push({
-                type: 'circle',
-                x: x || window.innerWidth / 2,
-                y: y || window.innerHeight / 2,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed,
-                gravity: 0.15,
-                size: Math.random() * 8 + 4,
-                color: colors[Math.floor(Math.random() * colors.length)],
-                alpha: 1.0,
-                decay: Math.random() * 0.03 + 0.015
-            });
+        if (effect === 'effect_nuke') {
+            this.shakeScreen(28, 750);
+            const nukeColors = ['#f97316', '#ef4444', '#facc15', '#451a03', '#ffffff'];
+            for (let i = 0; i < 90; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 16 + 5;
+                this.particles.push({
+                    type: 'circle',
+                    x: cx,
+                    y: cy,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 2,
+                    gravity: 0.1,
+                    size: Math.random() * 12 + 6,
+                    color: nukeColors[Math.floor(Math.random() * nukeColors.length)],
+                    alpha: 1.0,
+                    decay: 0.018
+                });
+            }
+            this.showFloatingBanner('☢️ 末日核弹·寸草不生！', cx, cy - 50, '#ef4444');
+        } else if (effect === 'effect_dragon') {
+            this.shakeScreen(24, 650);
+            const dragonColors = ['#f59e0b', '#fbbf24', '#fef08a', '#d97706', '#ffffff'];
+            for (let i = 0; i < 100; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 15 + 4;
+                this.particles.push({
+                    type: i % 4 === 0 ? 'coin' : 'circle',
+                    x: cx,
+                    y: cy,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 3,
+                    gravity: 0.08,
+                    size: Math.random() * 10 + 4,
+                    color: dragonColors[Math.floor(Math.random() * dragonColors.length)],
+                    alpha: 1.0,
+                    decay: 0.016
+                });
+            }
+            this.showFloatingBanner('🐉 龙吟九霄·天尊降世！', cx, cy - 50, '#f59e0b');
+        } else if (effect === 'effect_lightning') {
+            this.shakeScreen(20, 550);
+            const lightColors = ['#a855f7', '#c084fc', '#e9d5ff', '#38bdf8', '#ffffff'];
+            for (let i = 0; i < 80; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 18 + 6;
+                this.particles.push({
+                    type: 'circle',
+                    x: cx,
+                    y: cy,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    gravity: 0.05,
+                    size: Math.random() * 8 + 3,
+                    color: lightColors[Math.floor(Math.random() * lightColors.length)],
+                    alpha: 1.0,
+                    decay: 0.022
+                });
+            }
+            this.showFloatingBanner('⚡ 狂雷天降·万劫不复！', cx, cy - 50, '#a855f7');
+        } else if (effect === 'effect_fireworks') {
+            this.shakeScreen(16, 500);
+            const fireColors = ['#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ffffff'];
+            for (let i = 0; i < 90; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 14 + 4;
+                this.particles.push({
+                    type: i % 3 === 0 ? 'coin' : 'circle',
+                    x: cx,
+                    y: cy,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    gravity: 0.12,
+                    size: Math.random() * 9 + 4,
+                    color: fireColors[Math.floor(Math.random() * fireColors.length)],
+                    alpha: 1.0,
+                    decay: 0.018
+                });
+            }
+            this.showFloatingBanner('🎆 祥瑞礼炮·财源广进！', cx, cy - 50, '#ec4899');
+        } else {
+            // 经典爆破
+            this.shakeScreen(15, 500);
+            const colors = ['#f56565', '#ed8936', '#ecc94b', '#ffffff'];
+            for (let i = 0; i < 60; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 12 + 4;
+                this.particles.push({
+                    type: 'circle',
+                    x: cx,
+                    y: cy,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    gravity: 0.15,
+                    size: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    alpha: 1.0,
+                    decay: Math.random() * 0.03 + 0.015
+                });
+            }
+            this.showFloatingBanner('💣 经典爆破·威力翻倍！', cx, cy - 40, '#f56565');
         }
 
-        // 巨幅炸弹字样
-        this.showFloatingBanner('💣 炸弹翻倍！', x || window.innerWidth / 2, (y || window.innerHeight / 2) - 40, '#f56565');
         this.startLoop();
     }
 
     // 王炸/火箭特效
     triggerRocket() {
-        this.shakeScreen(22, 700);
-
+        const effect = this.equippedEffect || 'effect_bomb_classic';
         const cx = window.innerWidth / 2;
         const cy = window.innerHeight / 2;
 
-        // 火箭冲天尾焰
-        for (let i = 0; i < 100; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const speed = Math.random() * 18 + 6;
-            this.particles.push({
-                type: 'circle',
-                x: cx,
-                y: cy,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed,
-                gravity: 0.1,
-                size: Math.random() * 10 + 5,
-                color: ['#e53e3e', '#dd6b20', '#faf089', '#ffffff'][Math.floor(Math.random() * 4)],
-                alpha: 1.0,
-                decay: 0.02
-            });
+        if (effect === 'effect_dragon') {
+            this.shakeScreen(28, 850);
+            for (let i = 0; i < 130; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 20 + 6;
+                this.particles.push({
+                    type: i % 3 === 0 ? 'coin' : 'circle',
+                    x: cx,
+                    y: cy,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    gravity: 0.06,
+                    size: Math.random() * 12 + 5,
+                    color: ['#fbbf24', '#f59e0b', '#d97706', '#fef08a', '#ffffff'][Math.floor(Math.random() * 5)],
+                    alpha: 1.0,
+                    decay: 0.014
+                });
+            }
+            this.showFloatingBanner('👑 龙皇啸天·至尊无上！', cx, cy - 60, '#f59e0b');
+        } else {
+            this.shakeScreen(22, 700);
+            for (let i = 0; i < 100; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 18 + 6;
+                this.particles.push({
+                    type: 'circle',
+                    x: cx,
+                    y: cy,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    gravity: 0.1,
+                    size: Math.random() * 10 + 5,
+                    color: ['#e53e3e', '#dd6b20', '#faf089', '#ffffff'][Math.floor(Math.random() * 4)],
+                    alpha: 1.0,
+                    decay: 0.02
+                });
+            }
+            this.showFloatingBanner('🚀 王炸降临·毁天灭地！', cx, cy - 60, '#e53e3e');
         }
 
-        this.showFloatingBanner('🚀 王炸降临·毁天灭地！', cx, cy - 60, '#e53e3e');
         this.startLoop();
     }
 

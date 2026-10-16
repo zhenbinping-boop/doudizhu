@@ -521,14 +521,46 @@
         </div>
     </div>
 
+    <!-- 全局游戏内悬浮 Toast 消息提示容器 -->
+    <div id="game-toast-container" class="game-toast-container"></div>
+
+    <!-- 全局游戏内沉浸式拟物确认弹窗 (替代原生 confirm) -->
+    <div class="app-modal hidden" id="game-confirm-modal">
+        <div class="modal-content-panel game-confirm-panel">
+            <div class="confirm-icon-box">
+                <span id="confirm-modal-icon">⚠️</span>
+            </div>
+            <div id="confirm-modal-title" class="confirm-modal-title">温馨提示</div>
+            <div id="confirm-modal-message" class="confirm-modal-message">确定执行此操作吗？</div>
+            <div class="confirm-modal-actions">
+                <button id="confirm-btn-cancel" class="btn-game-modal-cancel">取消</button>
+                <button id="confirm-btn-ok" class="btn-game-modal-confirm">确定</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 装扮商城弹窗 -->
     <div class="app-modal hidden" id="shop-modal">
-        <div class="modal-content-panel">
+        <div class="modal-content-panel modal-shop-panel">
             <div class="modal-header">
-                <h3>🛍️ 个性装扮与道具商城</h3>
+                <div class="shop-header-left">
+                    <h3>🛍️ 个性装扮与典藏商城</h3>
+                </div>
+                <div class="shop-wallet-pills" id="shop-wallet-pills">
+                    <span class="shop-pill-coin">🪙 <b id="shop-coins-display">0</b></span>
+                    <span class="shop-pill-diamond">💎 <b id="shop-diamonds-display">0</b></span>
+                </div>
                 <button class="modal-close-btn">&times;</button>
             </div>
             <div class="modal-body">
+                <!-- 商城分类切换导航 -->
+                <div class="shop-tabs-nav" id="shop-tabs-nav">
+                    <button class="shop-tab-btn active" data-tab="all">🌟 全部精选</button>
+                    <button class="shop-tab-btn" data-tab="table">🎴 牌桌桌布</button>
+                    <button class="shop-tab-btn" data-tab="back">🃏 扑克牌背</button>
+                    <button class="shop-tab-btn" data-tab="effect">💥 轰鸣特效</button>
+                    <button class="shop-tab-btn" data-tab="title">👑 专属称号</button>
+                </div>
                 <div class="shop-items-grid" id="shop-items-container"></div>
             </div>
         </div>
@@ -564,6 +596,7 @@
     <script src="js/progression/ShopSystem.js"></script>
     <script src="js/progression/EndgamePuzzleSystem.js"></script>
 
+    <script src="js/ui/GameDialogs.js"></script>
     <script src="js/ui/AudioEngine.js"></script>
     <script src="js/ui/EffectsRenderer.js"></script>
     <script src="js/ui/TableRenderer.js"></script>

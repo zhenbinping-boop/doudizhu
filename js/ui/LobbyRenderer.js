@@ -51,11 +51,18 @@ class LobbyRenderer {
         // 调试模式按钮
         const debugBtn = document.getElementById('btn-debug-cheat');
         if (debugBtn) {
-            debugBtn.addEventListener('click', () => {
-                if (confirm('确认开启测试模式，直接获得 500,000 金币、1000 钻石并解锁全角色？')) {
+            debugBtn.addEventListener('click', async () => {
+                const ok = await window.showGameConfirm({
+                    title: '开启测试秘籍',
+                    message: '确认开启测试模式，直接获得 500,000 金币、1000 钻石并解锁全角色？',
+                    confirmText: '立即发放',
+                    cancelText: '取消',
+                    icon: '🚀'
+                });
+                if (ok) {
                     this.systems.storage.grantDebugResources(this.systems.storage.data);
                     this.updateHeaderHUD();
-                    alert('🎉 调试资源已发放！可以自由体验所有高阶场次、商城装扮与顶级天赋！');
+                    window.showGameToast('🎉 调试资源已发放！50万金币与1000钻石已入账！', 'success');
                 }
             });
         }
@@ -116,13 +123,21 @@ class LobbyRenderer {
                 const minCoins = { novice: 500, expert: 3000, master: 15000, legend: 100000, no_shuffle: 5000, puzzle: 0 };
                 const req = minCoins[venueKey] || 0;
                 if (mode !== 'PUZZLE' && this.systems.storage.data.currencies.coins < req) {
-                    if (confirm(`金币不足！进入该场次需要 ${req.toLocaleString()} 金币。\n是否前往领取破产救济金或抽取转盘？`)) {
-                        if (this.systems.economy.canClaimRelief()) {
-                            this.handleClaimRelief();
-                        } else {
-                            this.openWheelModal();
+                    window.showGameConfirm({
+                        title: '金币不足',
+                        message: `进入该场次需要 ${req.toLocaleString()} 金币。\n是否前往领取破产救济金或抽取幸运转盘？`,
+                        confirmText: '去获取金币',
+                        cancelText: '稍后再来',
+                        icon: '🪙'
+                    }).then(ok => {
+                        if (ok) {
+                            if (this.systems.economy.canClaimRelief()) {
+                                this.handleClaimRelief();
+                            } else {
+                                this.openWheelModal();
+                            }
                         }
-                    }
+                    });
                     return;
                 }
 
@@ -184,9 +199,9 @@ class LobbyRenderer {
         if (res.success) {
             this.updateHeaderHUD();
             this.systems.storage.save(this.systems.storage.data);
-            alert(`💰 救济金到账！获得 3,000 金币！（今日剩余次数: ${res.remainingTimes}）`);
+            window.showGameToast(`💰 救济金到账！获得 3,000 金币！（今日剩余: ${res.remainingTimes}次）`, 'success');
         } else {
-            alert(res.message);
+            window.showGameToast(res.message, 'warning');
         }
     }
 
@@ -271,8 +286,9 @@ class LobbyRenderer {
                     this.updateHeaderHUD();
                     this.openCharacterModal();
                     this.systems.storage.save(this.systems.storage.data);
+                    window.showGameToast('🎉 角色升级成功！技能效果已增强！', 'success');
                 } else {
-                    alert(res.message);
+                    window.showGameToast(res.message, 'warning');
                 }
             });
         });
@@ -313,8 +329,9 @@ class LobbyRenderer {
                     this.updateHeaderHUD();
                     this.openTalentModal();
                     this.systems.storage.save(this.systems.storage.data);
+                    window.showGameToast('✨ 天赋升级成功！属性已加成！', 'success');
                 } else {
-                    alert(res.message);
+                    window.showGameToast(res.message, 'warning');
                 }
             });
         });
@@ -430,7 +447,7 @@ class LobbyRenderer {
                     this.updateHeaderHUD();
                     this.openSignInModal();
                     this.systems.storage.save(this.systems.storage.data);
-                    alert(`🎉 签到成功！获得：${res.reward.text}`);
+                    window.showGameToast(`🎉 签到成功！获得：${res.reward.text}`, 'success');
                 }
             };
         }
@@ -450,7 +467,7 @@ class LobbyRenderer {
                 spinBtn.disabled = true;
                 const res = this.systems.shop.spinWheel(false);
                 if (!res.success) {
-                    alert(res.message);
+                    window.showGameToast(res.message, 'warning');
                     spinBtn.disabled = false;
                     return;
                 }
@@ -465,7 +482,7 @@ class LobbyRenderer {
                 setTimeout(() => {
                     this.updateHeaderHUD();
                     this.systems.storage.save(this.systems.storage.data);
-                    alert(`🎊 恭喜抽中大奖：【${res.prize.name}】！`);
+                    window.showGameToast(`🎊 恭喜抽中大奖：【${res.prize.name}】！`, 'success', 3500);
                     spinBtn.disabled = false;
                 }, 3700);
             };
@@ -474,56 +491,140 @@ class LobbyRenderer {
         modal.classList.remove('hidden');
     }
 
-    // 6. 商城面板
+    // 6. 商城面板（多分类、拟物预览、品阶标记与分级定价）
     openShopModal() {
         const modal = document.getElementById('shop-modal');
         const container = document.getElementById('shop-items-container');
         if (!modal || !container) return;
 
+        // 更新顶部资产显示
+        const coinsEl = document.getElementById('shop-coins-display');
+        const diamondsEl = document.getElementById('shop-diamonds-display');
+        if (coinsEl) coinsEl.innerText = (this.systems.storage.data.currencies.coins || 0).toLocaleString();
+        if (diamondsEl) diamondsEl.innerText = (this.systems.storage.data.currencies.diamonds || 0).toLocaleString();
+
+        if (!this.currentShopTab) this.currentShopTab = 'all';
+
+        // 绑定分类切换标签
+        const nav = document.getElementById('shop-tabs-nav');
+        if (nav && !nav._tabBound) {
+            nav._tabBound = true;
+            nav.querySelectorAll('.shop-tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    nav.querySelectorAll('.shop-tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    this.currentShopTab = btn.dataset.tab;
+                    this.renderShopItems(container);
+                });
+            });
+        }
+
+        this.renderShopItems(container);
+        modal.classList.remove('hidden');
+    }
+
+    renderShopItems(container) {
         container.innerHTML = '';
-        const items = this.systems.shop.data ? SHOP_ITEMS : [];
+        const activeTab = this.currentShopTab || 'all';
+        const allItems = typeof SHOP_ITEMS !== 'undefined' ? SHOP_ITEMS : [];
+        const items = activeTab === 'all' ? allItems : allItems.filter(i => i.type === activeTab);
 
         items.forEach(item => {
             const isOwned = this.systems.shop.isItemOwned(item);
             const isEquipped = this.systems.shop.isItemEquipped(item);
             const el = document.createElement('div');
-            el.className = 'shop-item-card';
+            el.className = `shop-item-card rarity-card-${item.rarity || 'common'}`;
+
+            // 生成预览图/样式缩略组件
+            let previewHtml = '';
+            if (item.type === 'table') {
+                previewHtml = `
+                    <div class="shop-preview-box preview-table ${item.id}">
+                        <div class="mini-table-felt">
+                            <span class="mini-table-crest">✦</span>
+                        </div>
+                    </div>
+                `;
+            } else if (item.type === 'back') {
+                previewHtml = `
+                    <div class="shop-preview-box">
+                        <div class="mini-card-back card-skin-${item.id}">
+                            <div class="mini-back-pattern"></div>
+                        </div>
+                    </div>
+                `;
+            } else if (item.type === 'effect') {
+                previewHtml = `
+                    <div class="shop-preview-box preview-effect">
+                        <div class="mini-effect-aura">
+                            <span class="effect-anim-icon">${item.icon}</span>
+                        </div>
+                    </div>
+                `;
+            } else if (item.type === 'title') {
+                previewHtml = `
+                    <div class="shop-preview-box preview-title">
+                        <div class="mini-title-ribbon">
+                            <span class="title-badge-inner">${item.titleText || item.name}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const priceHtml = item.cost === 0 ? 
+                '<span class="price-pill free">默认拥有</span>' : 
+                (item.costType === 'diamonds' ? 
+                    `<span class="price-pill diamond">💎 ${item.cost}</span>` : 
+                    `<span class="price-pill coin">🪙 ${item.cost.toLocaleString()}</span>`);
+
             el.innerHTML = `
-                <div class="shop-item-icon">${item.icon}</div>
+                <div class="shop-item-header">
+                    <span class="shop-rarity-pill rarity-${item.rarity || 'common'}">${item.tag || '经典'}</span>
+                </div>
+                ${previewHtml}
                 <div class="shop-item-name">${item.name}</div>
                 <div class="shop-item-desc">${item.desc}</div>
-                <div class="shop-item-price">${item.cost === 0 ? '默认拥有' : (item.costType === 'diamonds' ? `💎 ${item.cost}` : `🪙 ${item.cost}`)}</div>
+                <div class="shop-item-price-bar">${priceHtml}</div>
                 <div class="shop-item-action">
-                    ${isEquipped ? '<span class="status-badge">使用中</span>' : 
-                      (isOwned ? `<button class="btn-primary-sm btn-equip-item" data-id="${item.id}">装备</button>` : 
-                       `<button class="btn-warning-sm btn-buy-item" data-id="${item.id}">购买</button>`)}
+                    ${isEquipped ? '<span class="status-badge equipped-badge">已佩戴</span>' : 
+                      (isOwned ? `<button class="btn-primary-sm btn-equip-item" data-id="${item.id}">佩戴</button>` : 
+                       `<button class="btn-warning-sm btn-buy-item" data-id="${item.id}">购买解锁</button>`)}
                 </div>
             `;
             container.appendChild(el);
         });
 
+        // 绑定购买事件
         container.querySelectorAll('.btn-buy-item').forEach(b => {
             b.addEventListener('click', () => {
                 const res = this.systems.shop.buyItem(b.dataset.id);
                 if (res.success) {
                     this.updateHeaderHUD();
-                    this.openShopModal();
                     this.systems.storage.save(this.systems.storage.data);
+                    window.showGameToast(res.message, 'success');
+                    if (window.tableRenderer) window.tableRenderer.applyCosmetics();
+                    this.openShopModal();
                 } else {
-                    alert(res.message);
+                    window.showGameToast(res.message, 'warning');
                 }
             });
         });
 
+        // 绑定装备事件
         container.querySelectorAll('.btn-equip-item').forEach(b => {
             b.addEventListener('click', () => {
-                this.systems.shop.equipItem(b.dataset.id);
-                this.openShopModal();
-                this.systems.storage.save(this.systems.storage.data);
+                const res = this.systems.shop.equipItem(b.dataset.id);
+                if (res.success) {
+                    this.updateHeaderHUD();
+                    this.systems.storage.save(this.systems.storage.data);
+                    window.showGameToast(res.message, 'success');
+                    if (window.tableRenderer) window.tableRenderer.applyCosmetics();
+                    this.openShopModal();
+                } else {
+                    window.showGameToast(res.message, 'warning');
+                }
             });
         });
-
-        modal.classList.remove('hidden');
     }
 
     // 7. 残局解密闯关面板

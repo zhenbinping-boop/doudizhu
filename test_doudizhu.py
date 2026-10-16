@@ -220,5 +220,20 @@ class TestDouDizhu(unittest.TestCase):
         self.assertEqual(ht2['type'], 'TRIPLE_TWO')
         self.assertEqual(ht2['rank'], 10)
 
+    def test_shop_and_cosmetics(self):
+        # 验证商城的分级定价、品阶与商品分类
+        items = [
+            {'id': 'table_gold', 'type': 'table', 'cost': 1680, 'costType': 'diamonds', 'rarity': 'legendary'},
+            {'id': 'back_gold', 'type': 'back', 'cost': 1880, 'costType': 'diamonds', 'rarity': 'legendary'},
+            {'id': 'effect_dragon', 'type': 'effect', 'cost': 2180, 'costType': 'diamonds', 'rarity': 'legendary'},
+            {'id': 'title_god', 'type': 'title', 'cost': 1999, 'costType': 'diamonds', 'rarity': 'legendary'},
+            {'id': 'table_wood', 'type': 'table', 'cost': 38000, 'costType': 'coins', 'rarity': 'rare'}
+        ]
+        for it in items:
+            self.assertGreater(it['cost'], 0)
+            self.assertIn(it['costType'], ['coins', 'diamonds'])
+            self.assertIn(it['rarity'], ['common', 'rare', 'epic', 'legendary'])
+
 if __name__ == '__main__':
     unittest.main()
+

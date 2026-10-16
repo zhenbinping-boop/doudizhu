@@ -30,7 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. 初始化对局引擎与牌桌渲染器
     const engine = new GameEngine(systems);
-    const tableRenderer = new TableRenderer(engine, effects, audio);
+    const tableRenderer = new TableRenderer(engine, effects, audio, systems);
+    window.tableRenderer = tableRenderer;
 
     // 4. 初始化大厅控制器
     const lobbyView = document.getElementById('lobby-view');
@@ -40,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
         audio.init();
         lobbyView.classList.add('hidden');
         tableView.classList.remove('hidden');
+        tableRenderer.applyCosmetics();
     };
 
     const switchToLobby = () => {
@@ -49,9 +51,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // 绑定返回大厅按钮
-    document.getElementById('btn-back-lobby')?.addEventListener('click', () => {
+    document.getElementById('btn-back-lobby')?.addEventListener('click', async () => {
         if (engine.state === GAME_STATES.PLAYING) {
-            if (confirm('对局正在进行中，现在退出将被判负并扣除底分，确定退出吗？')) {
+            const ok = await window.showGameConfirm({
+                title: '退出对局提示',
+                message: '对局正在进行中，现在强行退出将被判负并扣除底分，确定退出吗？',
+                confirmText: '确认退出',
+                cancelText: '继续对战',
+                icon: '⚠️'
+            });
+            if (ok) {
                 engine.handleGameOver(1); // 判负
                 switchToLobby();
             }
@@ -112,15 +121,23 @@ document.addEventListener('DOMContentLoaded', () => {
             switchToTable();
         } else {
             if (res.reason === 'COINS_NOT_ENOUGH') {
-                if (confirm(`${res.message}\n金币不足！是否前往领取破产救济金或抽奖？`)) {
-                    if (economy.canClaimRelief()) {
-                        lobbyRenderer.handleClaimRelief();
-                    } else {
-                        lobbyRenderer.openWheelModal();
+                window.showGameConfirm({
+                    title: '金币不足',
+                    message: `${res.message}\n金币不足！是否前往领取破产救济金或抽取幸运转盘？`,
+                    confirmText: '去获取金币',
+                    cancelText: '取消',
+                    icon: '🪙'
+                }).then(ok => {
+                    if (ok) {
+                        if (economy.canClaimRelief()) {
+                            lobbyRenderer.handleClaimRelief();
+                        } else {
+                            lobbyRenderer.openWheelModal();
+                        }
                     }
-                }
+                });
             } else {
-                alert(res.message);
+                window.showGameToast(res.message, 'warning');
             }
         }
     };
