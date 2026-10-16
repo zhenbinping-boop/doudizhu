@@ -13,6 +13,26 @@
     <!-- 粒子特效画布 -->
     <canvas id="effects-canvas"></canvas>
 
+    <!-- 移动端横屏引导与强制横屏浮层 -->
+    <div id="landscape-guard-overlay" class="landscape-guard-overlay hidden">
+        <div class="guard-card-box">
+            <div class="guard-phone-anim">
+                <span class="phone-icon">📱</span>
+                <span class="rotate-arrow">🔄</span>
+            </div>
+            <h2 class="guard-title">请旋转手机横屏游玩</h2>
+            <p class="guard-subtitle">斗地主经典赛事推荐横屏体验，视野开阔无遮挡</p>
+            <div class="guard-actions-row">
+                <button id="btn-force-landscape" class="btn-guard-primary">
+                    <span>🔄 切换强制横屏</span>
+                </button>
+                <button id="btn-dismiss-guard" class="btn-guard-secondary">
+                    <span>竖屏继续体验</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- ==============================================
          0. 游戏开场 3D 动画与欢迎画面 (SPLASH SCREEN)
          ============================================== -->

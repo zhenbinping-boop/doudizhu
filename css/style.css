@@ -385,61 +385,79 @@ body {
     display: flex;
     align-items: center;
     gap: 14px;
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
 }
 
 .profile-avatar-box {
-    width: 56px;
-    height: 56px;
+    width: 52px;
+    height: 52px;
     border-radius: 50%;
     background: linear-gradient(135deg, #f59e0b, #d97706);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 30px;
+    font-size: 28px;
     box-shadow: 0 0 16px rgba(245, 158, 11, 0.6);
     border: 2px solid #fef3c7;
+    flex-shrink: 0;
 }
 
 .profile-info-text {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
 }
 
 .profile-name-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 #lobby-player-name {
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 800;
     color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .player-title-badge {
-    font-size: 11px;
+    font-size: 10px;
     background: linear-gradient(90deg, #ea580c, #dc2626);
-    padding: 2px 10px;
+    padding: 2px 8px;
     border-radius: 12px;
     color: #fff;
     font-weight: 700;
     box-shadow: 0 2px 6px rgba(220, 38, 38, 0.4);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .rank-badge-box {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--gold);
     font-weight: bold;
     display: flex;
     align-items: center;
     gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .rank-badge-box .stars-text {
     color: var(--gold-light);
-    font-size: 12px;
+    font-size: 11px;
+    white-space: nowrap;
 }
 
 .hud-currencies-box {
@@ -2108,23 +2126,525 @@ body {
 }
 
 /* ===================================================
-   6. 移动端与全屏幕自适应优化 (MOBILE ADAPTATION)
-   针对手机竖屏/横屏进行细致排版，杜绝卡牌溢出与按键遮挡
+   6. 移动端横屏沉浸体验与自适应重构 (MOBILE LANDSCAPE FIRST)
+   针对手机横屏进行全局深度重构：视野开阔、零遮挡、原生掌机级操作排布
    =================================================== */
-@media (max-width: 768px) {
-    /* 大厅移动端优化 */
+
+/* 移动端横屏引导与强制旋转遮罩 */
+.landscape-guard-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(10, 15, 24, 0.94);
+    backdrop-filter: blur(16px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 24px;
+    text-align: center;
+    transition: opacity 0.3s ease;
+}
+
+.guard-card-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 320px;
+    width: 90vw;
+    background: rgba(30, 41, 59, 0.85);
+    border: 1.5px solid rgba(245, 158, 11, 0.45);
+    border-radius: 24px;
+    padding: 28px 20px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
+}
+
+.guard-phone-anim {
+    position: relative;
+    width: 76px;
+    height: 76px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.guard-phone-anim .phone-icon {
+    font-size: 46px;
+    animation: rotatePhonePrompt 2.6s infinite ease-in-out;
+    transform-origin: center center;
+    display: inline-block;
+}
+
+@keyframes rotatePhonePrompt {
+    0%, 25% { transform: rotate(0deg); }
+    65%, 100% { transform: rotate(-90deg); }
+}
+
+.guard-phone-anim .rotate-arrow {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    font-size: 22px;
+    animation: spinArrowPrompt 2.6s infinite linear;
+}
+
+@keyframes spinArrowPrompt {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-360deg); }
+}
+
+.guard-title {
+    font-size: 19px;
+    font-weight: 900;
+    color: #fef08a;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+}
+
+.guard-subtitle {
+    font-size: 12px;
+    color: #cbd5e1;
+    line-height: 1.5;
+    margin-bottom: 22px;
+}
+
+.guard-actions-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.btn-guard-primary {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: #0f172a;
+    font-size: 14px;
+    font-weight: 900;
+    padding: 11px 20px;
+    border-radius: 28px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(245, 158, 11, 0.4);
+    transition: transform 0.2s ease;
+}
+
+.btn-guard-primary:active {
+    transform: scale(0.96);
+}
+
+.btn-guard-secondary {
+    background: transparent;
+    color: #94a3b8;
+    font-size: 12px;
+    padding: 6px;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* 核心：CSS 强制横屏适配模式 (当手机系统锁定竖屏时一键 90 度自适应旋转) */
+body.force-landscape-mode {
+    width: 100vh !important;
+    height: 100vw !important;
+    max-width: 100vh !important;
+    max-height: 100vw !important;
+    transform: rotate(90deg) translate3d(0, -100%, 0) !important;
+    transform-origin: top left !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    overflow: hidden !important;
+}
+
+/* ===================================================
+   横屏通用布局与样式（支持物理横屏与强制横屏模式）
+   =================================================== */
+@media screen and (orientation: landscape) and (max-height: 560px),
+       screen and (max-height: 500px) {
+
+    /* 顶部 HUD 紧凑横屏排布 */
+    .lobby-header-hud {
+        height: 42px;
+        min-height: 42px;
+        max-height: 42px;
+        padding: 4px 16px;
+    }
+
+    .hud-player-profile {
+        gap: 8px;
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+    .profile-avatar-box {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+        border-width: 1.5px;
+    }
+
+    .profile-info-text {
+        gap: 1px;
+        min-width: 0;
+    }
+
+    .profile-name-row {
+        gap: 6px;
+        white-space: nowrap;
+    }
+
+    #lobby-player-name {
+        font-size: 13px;
+        max-width: 80px;
+    }
+
+    .player-title-badge {
+        font-size: 9px;
+        padding: 1px 6px;
+    }
+
+    .rank-badge-box {
+        font-size: 11px;
+    }
+
+    .rank-badge-box .stars-text {
+        font-size: 10px;
+    }
+
+    .hud-currencies-box {
+        gap: 8px;
+    }
+
+    .currency-pill {
+        padding: 3px 8px;
+        font-size: 11px;
+        gap: 4px;
+        border-radius: 12px;
+    }
+
+    .btn-debug {
+        display: none;
+    }
+
+    /* 卡牌轮播舞台：按横屏比例舒展自适应，卡牌高度适中，按钮 100% 完整显示 */
+    .lobby-carousel-stage {
+        flex: 1;
+        height: calc(100vh - 42px - 46px);
+        padding: 4px 0 6px;
+        overflow: hidden;
+    }
+
+    .modes-carousel-track {
+        gap: 16px;
+        height: 100%;
+        padding: 4px calc(50vw - 160px);
+        align-items: center;
+    }
+
+    .mode-slide-card {
+        flex: 0 0 min(54vw, 320px);
+        height: min(92%, 240px);
+        max-height: 240px;
+        border-radius: 18px;
+        padding: 10px 14px;
+        border-width: 2px;
+    }
+
+    .card-inner-halo {
+        width: 180px;
+        height: 180px;
+        top: -40px;
+    }
+
+    .card-top-ribbon {
+        display: none;
+    }
+
+    .card-hero-emblem {
+        font-size: 34px;
+        margin: 0;
+    }
+
+    .card-mode-title {
+        font-size: 17px;
+        letter-spacing: 1px;
+    }
+
+    .card-mode-tagline {
+        font-size: 10px;
+        margin-bottom: 2px;
+    }
+
+    .card-specs-panel {
+        padding: 5px 10px;
+        gap: 3px;
+        border-radius: 10px;
+        width: 100%;
+    }
+
+    .spec-row {
+        font-size: 10px;
+    }
+
+    .card-enter-btn {
+        padding: 6px 0;
+        font-size: 13px;
+        border-radius: 16px;
+        width: 100%;
+    }
+
+    .carousel-arrow {
+        width: 32px;
+        height: 32px;
+        font-size: 20px;
+    }
+
+    .carousel-arrow.arrow-left { left: 8px; }
+    .carousel-arrow.arrow-right { right: 8px; }
+
+    .carousel-dots-bar {
+        gap: 6px;
+        margin-top: 4px;
+    }
+
+    .dot-indicator {
+        width: 6px;
+        height: 6px;
+    }
+
+    .dot-indicator.active {
+        width: 18px;
+    }
+
+    /* 底部 Dock 栏精简高度 */
+    .lobby-bottom-dock {
+        height: 46px;
+        min-height: 46px;
+        max-height: 46px;
+        padding: 2px 10px calc(env(safe-area-inset-bottom, 2px) + 2px);
+        gap: 4px;
+    }
+
+    .dock-btn {
+        padding: 2px 8px;
+        font-size: 10px;
+        gap: 1px;
+        border-radius: 8px;
+    }
+
+    .dock-btn .dock-icon {
+        font-size: 18px;
+    }
+
+    /* 牌桌横屏原生布局 */
+    #game-table-container::before {
+        top: 36px;
+        bottom: 4px;
+        left: 4px;
+        right: 4px;
+        border-width: 5px;
+        border-radius: 30px;
+    }
+
+    .table-top-bar {
+        padding: 4px 12px;
+        height: 34px;
+    }
+
+    .btn-table-back {
+        padding: 3px 8px;
+        font-size: 10px;
+    }
+
+    #game-venue-title {
+        font-size: 11px;
+    }
+
+    #game-multipliers-badge {
+        padding: 1px 6px;
+        font-size: 10px;
+    }
+
+    .bottom-cards-box {
+        gap: 3px;
+    }
+
+    .bottom-card-item {
+        width: 22px;
+        height: 32px;
+        font-size: 10px;
+        border-radius: 3px;
+    }
+
+    .btn-hud-tool {
+        padding: 3px 8px;
+        font-size: 10px;
+    }
+
+    /* AI 座位：左右两侧居中分布 */
+    .ai-seat {
+        top: 36%;
+    }
+
+    .ai-seat.left-seat { left: 10px; }
+    .ai-seat.right-seat { right: 10px; }
+
+    .player-avatar-circle {
+        width: 42px;
+        height: 42px;
+        font-size: 20px;
+    }
+
+    .player-seat-name {
+        font-size: 10px;
+        max-width: 55px;
+    }
+
+    .ai-card-fan {
+        width: 36px;
+        height: 50px;
+    }
+
+    .ai-card-back {
+        width: 30px;
+        height: 42px;
+    }
+
+    .ai-count-badge {
+        font-size: 10px;
+        padding: 1px 5px;
+    }
+
+    /* 三方出牌区：横屏居中宽敞分布 */
+    .play-zone-left {
+        left: 72px;
+        top: 34%;
+    }
+
+    .play-zone-right {
+        right: 72px;
+        top: 34%;
+    }
+
+    .play-zone-player {
+        bottom: 116px;
+        left: 50%;
+    }
+
+    .played-cards-fan {
+        height: 52px;
+    }
+
+    .played-poker-card {
+        width: 36px;
+        height: 52px;
+        border-radius: 4px;
+    }
+
+    .played-poker-card .played-card-corner {
+        top: 2px;
+        left: 3px;
+        width: 14px;
+    }
+
+    .played-poker-card .played-card-rank {
+        font-size: 11px;
+    }
+
+    .played-poker-card .played-card-suit {
+        font-size: 8px;
+    }
+
+    .played-poker-card .played-card-center {
+        font-size: 15px;
+    }
+
+    /* 叫地主/出牌操作区：手牌上方触手可及 */
+    .table-actions-container {
+        bottom: 80px;
+        gap: 6px;
+    }
+
+    .action-btn-group {
+        gap: 6px;
+    }
+
+    .btn-game-action {
+        padding: 5px 14px;
+        font-size: 12px;
+        border-radius: 18px;
+    }
+
+    /* 玩家手牌区：底部整齐舒展大扇形 */
+    .player-bottom-area {
+        bottom: 4px;
+    }
+
+    #player-hand {
+        height: 70px;
+    }
+
+    .poker-card {
+        width: 46px;
+        height: 66px;
+        border-radius: 5px;
+    }
+
+    .card-corner {
+        top: 2px;
+        left: 3px;
+    }
+
+    .card-corner-rank {
+        font-size: 11px;
+    }
+
+    .card-corner-suit {
+        font-size: 8px;
+    }
+
+    .card-center {
+        font-size: 16px;
+    }
+
+    /* 弹窗在横屏下自动优化宽度和高度 */
+    .modal-content-panel {
+        width: 90vw !important;
+        max-width: 620px !important;
+        max-height: 90vh !important;
+        padding: 10px 14px !important;
+    }
+
+    .matrix-grid-box {
+        grid-template-columns: repeat(8, 1fr) !important;
+        gap: 4px !important;
+    }
+}
+
+/* 竖屏备用保底：防止未旋转时文字换行与按键重叠 */
+@media screen and (orientation: portrait) and (max-width: 768px) {
     .lobby-header-hud {
         padding: 8px 12px;
     }
 
     .profile-avatar-box {
-        width: 42px;
-        height: 42px;
-        font-size: 24px;
+        width: 40px;
+        height: 40px;
+        font-size: 22px;
     }
 
     #lobby-player-name {
-        font-size: 14px;
+        font-size: 13px;
+        max-width: 75px;
+    }
+
+    .player-title-badge {
+        font-size: 9px;
+        padding: 1px 6px;
     }
 
     .rank-badge-box {
@@ -2132,323 +2652,50 @@ body {
     }
 
     .currency-pill {
-        padding: 4px 8px;
+        padding: 4px 7px;
         font-size: 11px;
     }
 
     .btn-debug {
-        display: none; /* 移动端隐藏以腾出空间 */
+        display: none;
     }
 
-    /* 移动端卡牌滑动轮播器适配 (几乎占满屏幕) */
     .lobby-carousel-stage {
-        padding: 6px 0 10px;
-    }
-
-    .modes-carousel-track {
-        gap: 16px;
-        padding: 6px calc(50vw - min(43vw, 175px));
+        padding: 4px 0 8px;
+        height: calc(100vh - 60px - 58px);
     }
 
     .mode-slide-card {
-        flex: 0 0 min(86vw, 350px);
-        height: min(66vh, 520px);
-        padding: 18px 16px;
-        border-radius: 22px;
+        flex: 0 0 min(86vw, 340px);
+        height: min(60vh, 440px);
+        padding: 16px 14px;
+        border-radius: 20px;
     }
 
     .card-hero-emblem {
-        font-size: 58px;
-        margin: 4px 0 2px;
+        font-size: 46px;
     }
 
     .card-mode-title {
-        font-size: 22px;
-        letter-spacing: 2px;
-    }
-
-    .card-mode-tagline {
-        font-size: 11px;
-        margin-bottom: 6px;
+        font-size: 20px;
     }
 
     .card-specs-panel {
-        padding: 10px 14px;
-        gap: 6px;
-        border-radius: 14px;
-    }
-
-    .spec-row {
-        font-size: 11px;
+        padding: 8px 12px;
+        gap: 4px;
     }
 
     .card-enter-btn {
-        padding: 11px 0;
-        font-size: 15px;
-    }
-
-    .carousel-arrow {
-        width: 36px;
-        height: 36px;
-        font-size: 24px;
-    }
-
-    .carousel-arrow.arrow-left { left: 8px; }
-    .carousel-arrow.arrow-right { right: 8px; }
-
-    .carousel-dots-bar {
-        gap: 8px;
-        margin-top: 8px;
-    }
-
-    .dot-indicator {
-        width: 8px;
-        height: 8px;
-    }
-
-    .dot-indicator.active {
-        width: 24px;
+        padding: 9px 0;
+        font-size: 14px;
     }
 
     .lobby-bottom-dock {
-        gap: 4px;
         padding: 6px 4px calc(env(safe-area-inset-bottom, 6px) + 4px);
     }
 
     .dock-btn {
-        padding: 4px 6px;
-        font-size: 10px;
-        gap: 2px;
-    }
-
-    .dock-btn .dock-icon {
-        font-size: 18px;
-    }
-
-    /* 牌桌移动端优化 */
-    #game-table-container::before {
-        top: 48px;
-        bottom: 6px;
-        left: 6px;
-        right: 6px;
-        border-width: 6px;
-        border-radius: 40px;
-    }
-
-    .table-top-bar {
-        padding: 6px 10px;
-    }
-
-    .btn-table-back {
-        padding: 5px 10px;
-        font-size: 11px;
-    }
-
-    .table-center-info {
-        gap: 8px;
-    }
-
-    #game-venue-title {
-        font-size: 12px;
-    }
-
-    #game-multipliers-badge {
-        padding: 2px 8px;
-        font-size: 11px;
-    }
-
-    .bottom-card-item {
-        width: 26px;
-        height: 38px;
-        font-size: 11px;
-    }
-
-    .bottom-card-item.face-down {
-        font-size: 16px;
-    }
-
-    .btn-hud-tool {
-        padding: 5px 10px;
-        font-size: 11px;
-    }
-
-    /* AI 座位紧凑化 */
-    .ai-seat {
-        top: 20%;
-    }
-
-    .ai-seat.left-seat { left: 10px; }
-    .ai-seat.right-seat { right: 10px; }
-
-    .player-avatar-circle {
-        width: 48px;
-        height: 48px;
-        font-size: 24px;
-        border-width: 2px;
-    }
-
-    .player-seat-name {
-        font-size: 11px;
-    }
-
-    .ai-card-fan {
-        width: 44px;
-        height: 60px;
-    }
-
-    .ai-card-back {
-        width: 38px;
-        height: 52px;
-    }
-
-    .ai-count-badge {
-        font-size: 11px;
-        padding: 1px 6px;
-        bottom: -4px;
-    }
-
-    /* 移动端三方出牌区定位 */
-    .play-zone-left {
-        left: 66px;
-        top: 24%;
-    }
-
-    .play-zone-right {
-        right: 66px;
-        top: 24%;
-    }
-
-    .play-zone-player {
-        bottom: 165px;
-    }
-
-    .played-cards-fan {
-        height: 62px;
-    }
-
-    .played-poker-card {
-        width: 44px;
-        height: 62px;
-        font-size: 12px;
-        border-radius: 5px;
-    }
-
-    .played-poker-card .played-rank {
-        font-size: 13px;
-    }
-
-    .played-poker-card .played-suit {
-        font-size: 10px;
-    }
-
-    .table-pass-tag {
-        font-size: 12px;
-        padding: 4px 12px;
-    }
-
-    /* 移动端操作按钮面板 */
-    .table-actions-container {
-        bottom: 115px;
-        gap: 8px;
-    }
-
-    .action-btn-group {
-        gap: 8px;
-    }
-
-    .btn-game-action {
-        padding: 8px 16px;
-        font-size: 14px;
-    }
-
-    /* 移动端玩家手牌区 */
-    .player-bottom-area {
-        bottom: 10px;
-    }
-
-    #player-hand {
-        height: 86px;
-    }
-
-    .poker-card {
-        width: 54px;
-        height: 80px;
-        border-radius: 6px;
-    }
-
-    .poker-card.selected {
-        transform: translateY(-20px) !important;
-    }
-
-    .card-corner {
-        top: 3px;
-        left: 4px;
-    }
-
-    .card-corner-rank {
-        font-size: 12px;
-    }
-
-    .card-corner-suit {
+        padding: 4px 5px;
         font-size: 9px;
-    }
-
-    .card-corner.bottom-right {
-        bottom: 3px;
-        right: 4px;
-    }
-
-    .card-center {
-        font-size: 22px;
-    }
-
-    .card-joker-corner {
-        top: 4px;
-        left: 4px;
-        font-size: 10px;
-    }
-
-    .card-joker-center {
-        font-size: 26px;
-    }
-
-    /* 移动端弹窗适配 */
-    .modal-content-panel {
-        width: 95vw !important;
-        max-width: 95vw !important;
-        max-height: 85vh !important;
-        padding: 14px !important;
-    }
-
-    .matrix-grid-box {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
-    }
-}
-
-@media (max-width: 480px) {
-    .mode-slide-card {
-        flex: 0 0 88vw;
-        height: min(65vh, 480px);
-        padding: 18px 14px;
-    }
-    .card-hero-emblem {
-        font-size: 50px;
-    }
-    .card-mode-title {
-        font-size: 20px;
-    }
-    .poker-card {
-        width: 48px;
-        height: 74px;
-    }
-    .card-center {
-        font-size: 18px;
-    }
-    .play-zone-left {
-        left: 56px;
-    }
-    .play-zone-right {
-        right: 56px;
     }
 }

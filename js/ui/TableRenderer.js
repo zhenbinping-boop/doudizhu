@@ -144,6 +144,16 @@ class TableRenderer {
     }
 
     /**
+     * 重新刷新牌桌各区域（供屏幕旋转时调用）
+     */
+    render() {
+        if (this.engine && this.engine.playerHands && this.engine.playerHands[0]) {
+            this.renderPlayerHand(this.engine.playerHands[0]);
+            this.renderAiHands(this.engine.playerHands[1]?.length || 0, this.engine.playerHands[2]?.length || 0);
+        }
+    }
+
+    /**
      * 渲染自己手牌（自适应移动端与桌面端，支持动态扇形和触屏操作）
      */
     renderPlayerHand(cards) {
@@ -152,14 +162,17 @@ class TableRenderer {
         const len = cards.length;
         if (len === 0) return;
 
-        const screenWidth = window.innerWidth;
-        const isMobile = screenWidth <= 768;
-        const cardWidth = isMobile ? 54 : 86;
-        const maxTotalWidth = Math.min(screenWidth - 20, isMobile ? screenWidth - 10 : 760);
+        const isForceLandscape = document.body.classList.contains('force-landscape-mode');
+        const effectiveWidth = isForceLandscape ? window.innerHeight : window.innerWidth;
+        const effectiveHeight = isForceLandscape ? window.innerWidth : window.innerHeight;
+        const isLandscape = effectiveWidth > effectiveHeight;
+        const isMobile = effectiveWidth <= 1024;
+        const cardWidth = isLandscape && effectiveHeight <= 560 ? 46 : (isMobile ? 54 : 86);
+        const maxTotalWidth = Math.min(effectiveWidth - (isLandscape ? 170 : 20), isMobile ? effectiveWidth - 20 : 760);
 
         // 自适应重叠间距，确保角标与数字绝不被后一张牌遮挡！
-        const minOverlap = isMobile ? 19 : 28;
-        const maxOverlap = isMobile ? 32 : 52;
+        const minOverlap = isLandscape ? 22 : (isMobile ? 19 : 28);
+        const maxOverlap = isLandscape ? 38 : (isMobile ? 32 : 52);
         const overlap = len <= 1 ? 0 : Math.min(maxOverlap, Math.max(minOverlap, (maxTotalWidth - cardWidth) / (len - 1)));
         const totalWidth = (len - 1) * overlap + cardWidth;
         this.playerHandEl.style.width = `${totalWidth}px`;
@@ -450,11 +463,16 @@ class TableRenderer {
         const playContainer = document.createElement('div');
         playContainer.className = `played-cards-fan seat-zone-${seat}`;
         
-        const isMobile = window.innerWidth <= 768;
+        const isForceLandscape = document.body.classList.contains('force-landscape-mode');
+        const effectiveWidth = isForceLandscape ? window.innerHeight : window.innerWidth;
+        const effectiveHeight = isForceLandscape ? window.innerWidth : window.innerHeight;
+        const isLandscape = effectiveWidth > effectiveHeight;
+        const isMobile = effectiveWidth <= 1024;
+
         // 关键：计算充足的 overlap，使每张牌左上角的点数和花色完整暴露，绝不遮挡！
-        const minOverlap = isMobile ? 22 : 28;
-        const maxOverlap = isMobile ? 28 : 38;
-        const availableW = isMobile ? (window.innerWidth * 0.72) : 480;
+        const minOverlap = isLandscape ? 22 : (isMobile ? 22 : 28);
+        const maxOverlap = isLandscape ? 32 : (isMobile ? 28 : 38);
+        const availableW = isLandscape ? Math.min(effectiveWidth * 0.55, 520) : (isMobile ? (effectiveWidth * 0.72) : 480);
         const overlap = cards.length <= 1 ? 0 : Math.min(maxOverlap, Math.max(minOverlap, Math.floor(availableW / cards.length)));
 
         cards.forEach((card, idx) => {

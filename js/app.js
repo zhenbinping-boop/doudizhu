@@ -195,16 +195,63 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => audio.playTone(659.25, 'triangle', 0.18, 0.25), 100);
             setTimeout(() => audio.playTone(783.99, 'triangle', 0.25, 0.3), 200);
 
+            // 尝试在用户手势中锁定屏幕为横屏
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(() => {});
+            }
+
             // 淡出开场动画，展现大厅 (1.2s 慢速柔和转场)
             splashScreen.classList.add('fade-out');
             setTimeout(() => {
                 splashScreen.style.display = 'none';
                 lobbyView.classList.remove('hidden');
                 lobbyRenderer.updateHeaderHUD();
+                checkOrientation();
             }, 1150);
         });
     } else if (splashScreen) {
         splashScreen.style.display = 'none';
         lobbyView.classList.remove('hidden');
     }
+
+    // 8. 移动端横屏管理与引导浮层 (Mobile Landscape Manager)
+    const guardOverlay = document.getElementById('landscape-guard-overlay');
+    const btnForceLandscape = document.getElementById('btn-force-landscape');
+    const btnDismissGuard = document.getElementById('btn-dismiss-guard');
+    let userDismissedGuard = false;
+
+    function checkOrientation() {
+        const isMobile = window.innerWidth <= 1024 || window.innerHeight <= 600;
+        const isPortrait = window.innerHeight > window.innerWidth;
+
+        // 如果用户已进入大厅且在移动端竖屏状态下，且未被手动关闭，则展示横屏引导
+        if (isMobile && isPortrait && !userDismissedGuard && !document.body.classList.contains('force-landscape-mode')) {
+            guardOverlay?.classList.remove('hidden');
+        } else {
+            guardOverlay?.classList.add('hidden');
+        }
+    }
+
+    // 点击一键切换强制横屏
+    btnForceLandscape?.addEventListener('click', () => {
+        document.body.classList.toggle('force-landscape-mode');
+        guardOverlay?.classList.add('hidden');
+        setTimeout(() => {
+            effects.resize();
+            tableRenderer.render();
+            lobbyRenderer.bindCarousel();
+        }, 300);
+    });
+
+    // 竖屏继续
+    btnDismissGuard?.addEventListener('click', () => {
+        userDismissedGuard = true;
+        guardOverlay?.classList.add('hidden');
+    });
+
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', () => {
+        setTimeout(checkOrientation, 200);
+    });
+    checkOrientation();
 });
